@@ -1,0 +1,6 @@
+{
+  "name": "تطبيق طريقي - Tariqi Bus & Rides",
+  "description": "تطبيق طريقي لإدارة وتحفيز دورات المدارس والمشاوير الثابتة، تتبع GPS المباشر، التفاوض الذكي على الأسعار، وتسجيل الكباتن والدفع عبر انستا باي.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
