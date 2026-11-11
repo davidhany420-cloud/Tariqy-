@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>درع الصداقة</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@500;700;800&family=Tajawal:wght@400;500;700&display=swap">
+<style>
+/* Layout: one centered "game board" column; each level is a single card with big tap targets */
+:root{
+  --bg:#EAF4F1; --surface:#FFFFFF; --surface-2:#F4FAF8; --ink:#16323A; --muted:#4D686D;
+  --brand:#117A72; --brand-soft:#D4EEEA; --sun:#F4B52A; --on-sun:#2A2205;
+  --good:#23894F; --good-soft:#DDF3E6; --bad:#C8423D; --bad-soft:#FBE3E1; --line:#CBE0DB;
+  --display:"Baloo Bhaijaan 2","Tajawal",system-ui,sans-serif;
+  --body:"Tajawal",system-ui,"Segoe UI",Tahoma,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E1C1F; --surface:#16292B; --surface-2:#1C3335; --ink:#E6F2EF; --muted:#9CB7B3;
+  --brand:#46BDB1; --brand-soft:#1F4543; --sun:#F6C24A; --on-sun:#2A2205;
+  --good:#5ACB89; --good-soft:#1C3B2B; --bad:#F2807A; --bad-soft:#40211F; --line:#2A4746; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1C1F; --surface:#16292B; --surface-2:#1C3335; --ink:#E6F2EF; --muted:#9CB7B3;
+  --brand:#46BDB1; --brand-soft:#1F4543; --sun:#F6C24A; --on-sun:#2A2205;
+  --good:#5ACB89; --good-soft:#1C3B2B; --bad:#F2807A; --bad-soft:#40211F; --line:#2A4746; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18px;line-height:1.7;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
+.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.25}
+h1{font-size:clamp(2rem,7vw,2.9rem);font-weight:800}
+h2{font-size:clamp(1.45rem,5vw,1.9rem);font-weight:800}
+h3{font-size:1.2rem;font-weight:700}
+p{margin:0}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:800;font-size:1.25rem;color:var(--brand)}
+.score{background:var(--sun);color:var(--on-sun);font-weight:700;border-radius:999px;padding:4px 16px;font-variant-numeric:tabular-nums}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.steps span{height:8px;border-radius:99px;background:var(--line)}
+.steps span.on{background:var(--brand)}
+.steps span.now{background:var(--sun)}
+
+.card{background:var(--surface);border:2px solid var(--line);border-radius:22px;padding:22px;display:flex;flex-direction:column;gap:16px}
+.eyebrow{font-size:.85rem;font-weight:700;letter-spacing:.04em;color:var(--brand)}
+.muted{color:var(--muted)}
+.hero{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center}
+@media (max-width:520px){.hero{grid-template-columns:1fr;justify-items:center;text-align:center}}
+
+.signs{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.sign{background:var(--surface-2);border-radius:16px;padding:12px 14px}
+.sign b{display:block;font-family:var(--display);font-size:1.1rem;color:var(--brand)}
+.types{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:var(--brand-soft);color:var(--ink);border-radius:999px;padding:3px 14px;font-weight:700;font-size:.95rem}
+
+.btn{font:inherit;font-weight:700;border:0;border-radius:16px;padding:14px 22px;cursor:pointer;
+  background:var(--brand);color:var(--surface);transition:transform .12s}
+.btn:hover{transform:translateY(-2px)}
+.btn:active{transform:translateY(1px)}
+.btn.sun{background:var(--sun);color:var(--on-sun)}
+.btn.ghost{background:transparent;color:var(--brand);border:2px solid var(--brand)}
+.btn:focus-visible,.opt:focus-visible,.bubble:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row .btn{flex:1 1 180px}
+
+.situation{font-size:1.3rem;font-weight:500;background:var(--surface-2);border-radius:16px;padding:18px;border-inline-start:6px solid var(--sun)}
+.count{font-variant-numeric:tabular-nums;color:var(--muted);font-weight:700}
+
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{font:inherit;text-align:start;background:var(--surface-2);color:var(--ink);border:2px solid var(--line);border-radius:16px;padding:14px 16px;cursor:pointer}
+.opt:hover{border-color:var(--brand)}
+.opt[disabled]{cursor:default}
+.opt.good{background:var(--good-soft);border-color:var(--good)}
+.opt.bad{background:var(--bad-soft);border-color:var(--bad)}
+
+.fb{border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.fb.good{background:var(--good-soft)} .fb.good b{color:var(--good)}
+.fb.bad{background:var(--bad-soft)} .fb.bad b{color:var(--bad)}
+.fb b{font-family:var(--display);font-size:1.2rem}
+
+.meter{height:22px;border-radius:99px;background:var(--surface-2);border:2px solid var(--line);overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--good),var(--brand));transition:width .4s}
+.bubbles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.bubble{font:inherit;font-weight:700;min-height:70px;border-radius:20px;border:2px dashed var(--line);background:var(--surface-2);color:var(--ink);cursor:pointer;padding:10px}
+.bubble.good{background:var(--good-soft);border:2px solid var(--good);color:var(--good)}
+.bubble.bad{animation:shake .4s;background:var(--bad-soft);border-color:var(--bad)}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+.plan{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;counter-reset:s}
+.plan div{background:var(--surface-2);border-radius:16px;padding:12px 14px}
+.plan div::before{counter-increment:s;content:"خطوة " counter(s);display:block;font-weight:700;color:var(--brand);font-size:.9rem}
+
+label.check{display:flex;gap:10px;align-items:flex-start;background:var(--surface-2);border-radius:14px;padding:10px 14px;cursor:pointer}
+label.check input{width:22px;height:22px;margin-top:4px;accent-color:var(--brand)}
+input[type=text]{font:inherit;width:100%;padding:12px 14px;border-radius:14px;border:2px solid var(--line);background:var(--surface-2);color:var(--ink)}
+
+.cert{text-align:center;align-items:center;border:4px double var(--sun);background:var(--surface)}
+.cert .name{font-family:var(--display);font-size:clamp(2rem,8vw,3rem);font-weight:800;color:var(--brand);line-height:1.2}
+.rank{background:var(--sun);color:var(--on-sun);border-radius:999px;padding:4px 18px;font-weight:800;font-family:var(--display);font-size:1.2rem}
+.pledges{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.pledges li::before{content:"✔ ";color:var(--good);font-weight:700}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <svg width="34" height="38" viewBox="0 0 34 38" aria-hidden="true"><path d="M17 2 31 7v10c0 9-6 15-14 19C9 32 3 26 3 17V7z" fill="var(--brand)"/><path d="M17 27c-5-3-8-6-8-9a4 4 0 0 1 8-1 4 4 0 0 1 8 1c0 3-3 6-8 9z" fill="var(--sun)"/></svg>
+      درع الصداقة
+    </div>
+    <div class="score" aria-live="polite">نقاط الشجاعة: <span id="score">0</span></div>
+  </header>
+  <div class="steps" id="steps" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+  <main id="app"></main>
+</div>
+
+<script>
+(function(){
+const SITUATIONS=[
+ {t:"عمر بيقول لزميله كل يوم إنه «تخين» وكل الفصل بيضحك عليه.",ans:true,type:"تنمر لفظي",why:"بيتكرر كل يوم ومقصود يضايقه قدام الناس."},
+ {t:"سارة وصاحبتها اختلفوا مرة واحدة على لعبة وزعلوا من بعض، وتاني يوم اتصالحوا.",ans:false,type:"خلاف عادي",why:"الخلاف بيحصل بين الأصحاب. مش متكرر ومفيش حد أقوى بيأذي حد أضعف."},
+ {t:"مجموعة بنات بيمنعوا مريم تقعد معاهم في الفسحة كل يوم وبيقولوا لها «إنتي مش زينا».",ans:true,type:"تنمر اجتماعي (عزل)",why:"إنك تبعد حد عن الناس قصد وبشكل متكرر ده تنمر حتى لو مفيش ضرب."},
+ {t:"حد نشر صورة زميله على جروب الفصل وكتب عليها تعليقات بتتريق على شكله.",ans:true,type:"تنمر إلكتروني",why:"التنمر على الموبايل والإنترنت تنمر حقيقي، والصورة بتفضل موجودة ويشوفها ناس كتير."},
+ {t:"يوسف الكبير بيزق زميله الصغير ويخطف منه الساندويتش كل يوم.",ans:true,type:"تنمر جسدي",why:"فيه أذى للجسم، ومتكرر، ويوسف بيستغل إنه أقوى."},
+ {t:"كريم شاط الكورة بالغلط فجت في رجل صاحبه، فجري عليه واعتذر.",ans:false,type:"حادثة",why:"مكانش قاصد، واعتذر. التنمر بيكون مقصود."},
+ {t:"صاحبك قالك بأدب: «رسمتك حلوة، بس لو زودت ألوان هتبقى أحلى».",ans:false,type:"نصيحة بلطف",why:"الرأي المحترم اللي هدفه يساعدك مش تنمر."},
+ {t:"ولاد في الفصل بيقلدوا طريقة كلام زميلهم اللي بيتهته عشان يضحّكوا الناس عليه.",ans:true,type:"تنمر لفظي",why:"السخرية من حاجة الإنسان مالوش ذنب فيها بتجرح جامد."}
+];
+const SCENES=[
+ {q:"شفت ولاد بيتريقوا على زميلك عشان لابس نضارة كبيرة، وهو باين عليه إنه زعلان.",o:[
+  {t:"أضحك معاهم عشان مبقاش غريب.",s:0,f:"الضحك بيدي المتنمر إحساس إن الناس معاه، فبيكمل."},
+  {t:"أقف جنبه وأقول بهدوء «كفاية، ده مش هزار»، وآخده نلعب في حتة تانية.",s:20,f:"برافو! وقفتك جنبه بتفرق جدًا، وكتير المتنمر بيوقف لما يلاقي حد مش موافق."},
+  {t:"أمشي وأعمل نفسي مش شايف.",s:5,f:"أحسن من الضحك، بس السكوت ممكن يخلي زميلك يحس إنه لوحده. على الأقل احكي لمعلم."}]},
+ {q:"حد بيبعتلك رسايل وحشة على الواتساب ويهددك إنه هيفضحك قدام الفصل.",o:[
+  {t:"أرد عليه بشتيمة أوحش.",s:0,f:"الرد بالشتيمة بيكبّر المشكلة، وممكن إنت كمان تتعاقب."},
+  {t:"أمسح الرسايل وأسكت ومقولش لحد.",s:5,f:"مسح الرسايل بيضيع الدليل، والسكوت بيخليك شايل الحمل لوحدك."},
+  {t:"آخد سكرين شوت للرسايل، أعمل بلوك، وأوري أهلي أو المعلمة.",s:20,f:"ده الصح بالظبط: دليل + بلوك + كبير بتثق فيه."}]},
+ {q:"في طالب جديد في الفصل، بيقعد لوحده في الفسحة كل يوم.",o:[
+  {t:"أعزمه يلعب معانا أو يقعد معانا.",s:20,f:"تصرف بطل! كلمة واحدة لطيفة ممكن تغير يومه كله."},
+  {t:"أتريق على لهجته عشان مختلفة.",s:0,f:"الاختلاف مش عيب. التريقة دي تنمر بيجرحه."},
+  {t:"أسيبه، أكيد هو بيحب يقعد لوحده.",s:5,f:"ممكن يكون مكسوف بس. جرب تسأله وإنت هتعرف."}]},
+ {q:"إنت قلت هزار على زميلك قدام الفصل، وبعدين لاحظت إنه زعل ومشي.",o:[
+  {t:"أقول «إيه ده، ده كان مجرد هزار!»",s:0,f:"الهزار هزار لما الاتنين يضحكوا. لو واحد زعل، يبقى جرحه."},
+  {t:"أروح أعتذر له بجد ومكررهاش تاني.",s:20,f:"الاعتذار شجاعة كبيرة. الأقوياء بيعترفوا بغلطهم."},
+  {t:"أتجاهله لحد ما ينسى.",s:5,f:"هو ممكن مينساش. اعتذار بسيط بيصلح حاجات كتير."}]},
+ {q:"ولد أكبر منك بياخد مصروفك كل يوم ويقولك «لو قلت لحد هتشوف».",o:[
+  {t:"أديله الفلوس وأسكت عشان ميأذنيش.",s:0,f:"السكوت مش هيوقفه. التهديد ده بالذات لازم كبير يعرف بيه."},
+  {t:"أحكي لأهلي أو للأخصائي الاجتماعي في المدرسة.",s:20,f:"صح جدًا. الحكي لكبير بتثق فيه مش «فتنة»، ده حماية ليك."},
+  {t:"أتخانق معاه وأضربه.",s:5,f:"ممكن تتأذي، وممكن تتعاقب إنت كمان. الكبار يقدروا يوقفوه بأمان."}]},
+ {q:"أصحابك بيضغطوا عليك إنك تبعت «إيموجي ضحك» على صورة بيتريقوا بيها على زميلة.",o:[
+  {t:"أبعت عشان مبقاش برا الشلة.",s:0,f:"حتى إيموجي صغير بيشارك في الأذى، والزميلة هتشوفه."},
+  {t:"أرفض وأكتب «بلاش الكلام ده يا جماعة»، وأبلغ لو كملوا.",s:20,f:"ده اللي اسمه شجاعة. الصاحب الحقيقي مش هيزعلك عشان عملت الصح."},
+  {t:"أخرج من الجروب ومعلقش.",s:5,f:"كويس إنك مشاركتش، بس الزميلة لسه محتاجة حد يقف معاها."}]}
+];
+const WORDS=[
+ {t:"تعالَ العب معانا",k:1},{t:"إنت فاشل",k:0},{t:"فكرتك حلوة",k:1},{t:"محدش عايزك هنا",k:0},
+ {t:"إنت كويس؟",k:1},{t:"شكلك يضحّك",k:0},{t:"شكرًا إنك ساعدتني",k:1},{t:"روح يا قصير",k:0},
+ {t:"أنا آسف",k:1},{t:"إنت غبي",k:0},{t:"أنا جنبك",k:1},{t:"مالكش لازمة",k:0}
+];
+const PLEDGES=["مش هتريق على حد بسبب شكله أو كلامه أو لبسه.","لو شفت حد بيتنمر عليه، هقف جنبه أو أحكي لكبير.","هعتذر لو جرحت حد، حتى لو من غير قصد.","هكون لطيف مع الطلاب الجداد واللي لوحدهم."];
+const MAX=SITUATIONS.length*10+SCENES.length*20+6*5;
+
+let S={score:0,level:0,i:0,found:0,name:"",picked:[]};
+const app=document.getElementById("app"),scoreEl=document.getElementById("score");
+const h=(html)=>{app.innerHTML=html;window.scrollTo({top:0,behavior:"smooth"});};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function add(n){S.score+=n;scoreEl.textContent=S.score;}
+function steps(){[...document.querySelectorAll("#steps span")].forEach((s,k)=>{s.className=k<S.level-1?"on":k===S.level-1?"now":"";});}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+function home(){S={score:0,level:0,i:0,found:0,name:"",picked:[]};scoreEl.textContent=0;steps();
+ h(`<section class="card">
+  <div class="hero">
+   <svg width="110" height="124" viewBox="0 0 34 38" aria-hidden="true"><path d="M17 2 31 7v10c0 9-6 15-14 19C9 32 3 26 3 17V7z" fill="var(--brand)"/><path d="M17 27c-5-3-8-6-8-9a4 4 0 0 1 8-1 4 4 0 0 1 8 1c0 3-3 6-8 9z" fill="var(--sun)"/></svg>
+   <div style="display:flex;flex-direction:column;gap:8px">
+    <span class="eyebrow">لعبة للأطفال من سن ٩ لـ ١٣ سنة</span>
+    <h1>درع الصداقة</h1>
+    <p class="muted">٤ مراحل تتعلم فيها يعني إيه تنمر، وإزاي توقفه، وتطلع في الآخر بشهادة «سفير ضد التنمر».</p>
+   </div>
+  </div>
+  <h3>قبل ما نبدأ: إمتى يبقى الموضوع تنمر؟</h3>
+  <div class="signs">
+   <div class="sign"><b>مقصود</b>اللي بيعمله عارف إنه بيضايق التاني.</div>
+   <div class="sign"><b>متكرر</b>بيحصل أكتر من مرة، مش غلطة مرة واحدة.</div>
+   <div class="sign"><b>قوة مش متساوية</b>حد أكبر أو معاه ناس أكتر بيستقوى على حد.</div>
+  </div>
+  <h3>أنواع التنمر</h3>
+  <div class="types"><span class="chip">لفظي: شتيمة وتريقة</span><span class="chip">جسدي: ضرب وزق</span><span class="chip">اجتماعي: عزل ونشر إشاعات</span><span class="chip">إلكتروني: على الموبايل والنت</span></div>
+  <button class="btn sun" id="go">يلا نبدأ المرحلة الأولى</button>
+ </section>`);
+ document.getElementById("go").onclick=()=>{S.level=1;S.i=0;l1();};
+}
+
+function l1(){steps();const s=SITUATIONS[S.i];
+ h(`<section class="card">
+  <div class="top"><span class="eyebrow">المرحلة ١ · المحقق الذكي</span><span class="count">${S.i+1} / ${SITUATIONS.length}</span></div>
+  <h2>ده تنمر ولا لأ؟</h2>
+  <p class="situation">${s.t}</p>
+  <div class="row" id="ans"><button class="btn" data-a="1">ده تنمر</button><button class="btn ghost" data-a="0">مش تنمر</button></div>
+  <div id="fb"></div>
+ </section>`);
+ document.querySelectorAll("#ans button").forEach(b=>b.onclick=()=>{
+  const ok=(b.dataset.a==="1")===s.ans;if(ok)add(10);
+  document.getElementById("ans").hidden=true;
+  document.getElementById("fb").innerHTML=`<div class="fb ${ok?"good":"bad"}"><b>${ok?"إجابة صح! +١٠":"مش بالظبط"}</b><span><span class="chip">${s.type}</span></span><span>${s.why}</span></div>
+   <div class="row" style="margin-top:12px"><button class="btn sun" id="nx">${S.i<SITUATIONS.length-1?"اللي بعده":"على المرحلة التانية"}</button></div>`;
+  const nx=document.getElementById("nx");nx.focus();
+  nx.onclick=()=>{S.i++;if(S.i<SITUATIONS.length)l1();else{S.level=2;S.i=0;l2();}};
+ });
+}
+
+function l2(){steps();const sc=SCENES[S.i],opts=shuffle(sc.o);
+ h(`<section class="card">
+  <div class="top"><span class="eyebrow">المرحلة ٢ · إنت البطل</span><span class="count">${S.i+1} / ${SCENES.length}</span></div>
+  <h2>تعمل إيه؟</h2>
+  <p class="situation">${sc.q}</p>
+  <div class="opts" id="opts">${opts.map((o,k)=>`<button class="opt" data-k="${k}">${o.t}</button>`).join("")}</div>
+  <div id="fb"></div>
+ </section>`);
+ const bs=[...document.querySelectorAll(".opt")];
+ bs.forEach(b=>b.onclick=()=>{
+  const o=opts[+b.dataset.k];add(o.s);
+  bs.forEach((x,k)=>{x.disabled=true;if(opts[k].s===20)x.classList.add("good");});
+  if(o.s!==20)b.classList.add("bad");
+  document.getElementById("fb").innerHTML=`<div class="fb ${o.s===20?"good":"bad"}"><b>${o.s===20?"تصرف بطل! +٢٠":o.s?"فكر تاني +٥":"لأ، ده بيأذي"}</b><span>${o.f}</span></div>
+   <div class="row" style="margin-top:12px"><button class="btn sun" id="nx">${S.i<SCENES.length-1?"الموقف اللي بعده":"على المرحلة التالتة"}</button></div>`;
+  const nx=document.getElementById("nx");nx.focus();
+  nx.onclick=()=>{S.i++;if(S.i<SCENES.length)l2();else{S.level=3;S.found=0;l3();}};
+ });
+}
+
+function l3(){steps();const ws=shuffle(WORDS);
+ h(`<section class="card">
+  <span class="eyebrow">المرحلة ٣ · املا قلب الفصل</span>
+  <h2>دوّر على الكلمات اللي بتبني</h2>
+  <p class="muted">في ٦ كلمات لطيفة مستخبية وسط كلمات بتجرح. دوس على اللطيفة بس عشان تملا عداد الطيبة.</p>
+  <div class="meter" role="progressbar" aria-label="عداد الطيبة" aria-valuemin="0" aria-valuemax="6" aria-valuenow="0" id="m"><i id="mi"></i></div>
+  <div class="bubbles">${ws.map((w,k)=>`<button class="bubble" data-k="${k}">${w.t}</button>`).join("")}</div>
+  <p id="msg" class="muted" aria-live="polite">دوس على أي كلمة.</p>
+ </section>`);
+ document.querySelectorAll(".bubble").forEach(b=>b.onclick=()=>{
+  const w=ws[+b.dataset.k],msg=document.getElementById("msg");
+  if(w.k){if(b.classList.contains("good"))return;b.classList.add("good");b.disabled=true;S.found++;add(5);
+   document.getElementById("mi").style.width=(S.found/6*100)+"%";document.getElementById("m").setAttribute("aria-valuenow",S.found);
+   msg.textContent=`كلمة حلوة! «${w.t}» بتخلي اللي قدامك يحس إنه مهم. (${S.found} من ٦)`;
+   if(S.found===6){msg.innerHTML=`قلب الفصل اتملا! <button class="btn sun" id="nx" style="margin-top:10px;display:block">على المرحلة الأخيرة</button>`;
+    const nx=document.getElementById("nx");nx.focus();nx.onclick=()=>{S.level=4;l4();};}
+  }else{b.classList.remove("bad");void b.offsetWidth;b.classList.add("bad");
+   msg.textContent=`آي! «${w.t}» كلمة بتجرح. الكلمة ممكن تفضل في قلب الإنسان سنين.`;}
+ });
+}
+
+function l4(){steps();
+ h(`<section class="card">
+  <span class="eyebrow">المرحلة ٤ · وعد البطل</span>
+  <h2>لو اتنمر عليك، افتكر الـ٣ خطوات</h2>
+  <div class="plan"><div>قول «لأ، وقف» بصوت هادي وواثق.</div><div>ابعد عن المكان وروح عند ناس.</div><div>احكي لكبير بتثق فيه: أهلك أو المعلمة أو الأخصائي.</div></div>
+  <h3>اختار الوعود اللي هتلتزم بيها</h3>
+  <div class="opts">${PLEDGES.map((p,k)=>`<label class="check"><input type="checkbox" id="p${k}" checked><span>${p}</span></label>`).join("")}</div>
+  <label for="nm"><h3>اكتب اسمك عشان شهادتك</h3></label>
+  <input type="text" id="nm" maxlength="30" placeholder="مثلًا: ملك أحمد">
+  <button class="btn sun" id="cert">اعرض شهادتي</button>
+ </section>`);
+ document.getElementById("cert").onclick=()=>{
+  S.name=document.getElementById("nm").value.trim()||"بطل الصداقة";
+  S.picked=PLEDGES.filter((p,k)=>document.getElementById("p"+k).checked);cert();};
+}
+
+function cert(){S.level=5;steps();
+ const pct=S.score/MAX,rank=pct>=.85?"سفير ذهبي ضد التنمر":pct>=.6?"سفير فضي ضد التنمر":"سفير تحت التدريب";
+ h(`<section class="card cert">
+  <svg width="80" height="90" viewBox="0 0 34 38" aria-hidden="true"><path d="M17 2 31 7v10c0 9-6 15-14 19C9 32 3 26 3 17V7z" fill="var(--brand)"/><path d="M17 27c-5-3-8-6-8-9a4 4 0 0 1 8-1 4 4 0 0 1 8 1c0 3-3 6-8 9z" fill="var(--sun)"/></svg>
+  <span class="eyebrow">شهادة درع الصداقة</span>
+  <p>نشهد إن</p>
+  <div class="name">${esc(S.name)}</div>
+  <span class="rank">${rank}</span>
+  <p>خلّص كل المراحل وجمع <b>${S.score}</b> من <b>${MAX}</b> نقطة شجاعة.</p>
+  ${S.picked.length?`<div style="text-align:start"><h3>وعد إنه:</h3><ul class="pledges">${S.picked.map(p=>`<li>${p}</li>`).join("")}</ul></div>`:""}
+  <p class="muted">خد صورة للشاشة دي وورّيها لمعلمتك وأصحابك.</p>
+  <div class="row" style="width:100%"><button class="btn" id="again">العب تاني</button></div>
+ </section>`);
+ document.getElementById("again").onclick=home;
+}
+
+home();
+})();
+</script>
+</body>
+</html>
