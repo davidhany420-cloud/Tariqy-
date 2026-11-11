@@ -5,288 +5,479 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>درع الصداقة</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@500;700;800&family=Tajawal:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@600;800&family=Tajawal:wght@400;500;700;800&display=swap">
 <style>
-/* Layout: one centered "game board" column; each level is a single card with big tap targets */
+/* Layout: full-screen 3D school yard; HTML overlays (HUD, dialog, start, certificate) float above the canvas */
 :root{
-  --bg:#EAF4F1; --surface:#FFFFFF; --surface-2:#F4FAF8; --ink:#16323A; --muted:#4D686D;
-  --brand:#117A72; --brand-soft:#D4EEEA; --sun:#F4B52A; --on-sun:#2A2205;
-  --good:#23894F; --good-soft:#DDF3E6; --bad:#C8423D; --bad-soft:#FBE3E1; --line:#CBE0DB;
+  --ink:#10292E; --panel:rgba(255,255,255,.94); --panel-ink:#10292E; --muted:#4A666B;
+  --brand:#0F7A71; --brand-soft:#D3EEE9; --sun:#FFC233; --on-sun:#2B2104;
+  --good:#1F8A4C; --good-soft:#DCF3E5; --bad:#C63F3A; --bad-soft:#FBE2E0; --line:#C9DFDA;
+  --night:#0C2226;
   --display:"Baloo Bhaijaan 2","Tajawal",system-ui,sans-serif;
   --body:"Tajawal",system-ui,"Segoe UI",Tahoma,sans-serif;
+  color-scheme:light;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0E1C1F; --surface:#16292B; --surface-2:#1C3335; --ink:#E6F2EF; --muted:#9CB7B3;
-  --brand:#46BDB1; --brand-soft:#1F4543; --sun:#F6C24A; --on-sun:#2A2205;
-  --good:#5ACB89; --good-soft:#1C3B2B; --bad:#F2807A; --bad-soft:#40211F; --line:#2A4746; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#0E1C1F; --surface:#16292B; --surface-2:#1C3335; --ink:#E6F2EF; --muted:#9CB7B3;
-  --brand:#46BDB1; --brand-soft:#1F4543; --sun:#F6C24A; --on-sun:#2A2205;
-  --good:#5ACB89; --good-soft:#1C3B2B; --bad:#F2807A; --bad-soft:#40211F; --line:#2A4746; color-scheme:dark}
-
+[hidden]{display:none!important}
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18px;line-height:1.7;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
-.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
-h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.25}
-h1{font-size:clamp(2rem,7vw,2.9rem);font-weight:800}
-h2{font-size:clamp(1.45rem,5vw,1.9rem);font-weight:800}
-h3{font-size:1.2rem;font-weight:700}
+html,body{height:100%;margin:0;overflow:hidden}
+body{background:var(--night);color:var(--panel-ink);font-family:var(--body);font-size:18px;line-height:1.6}
+canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:pointer}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.2;text-wrap:balance}
 p{margin:0}
 
-.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:800;font-size:1.25rem;color:var(--brand)}
-.score{background:var(--sun);color:var(--on-sun);font-weight:700;border-radius:999px;padding:4px 16px;font-variant-numeric:tabular-nums}
-.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
-.steps span{height:8px;border-radius:99px;background:var(--line)}
-.steps span.on{background:var(--brand)}
-.steps span.now{background:var(--sun)}
+.hud{position:fixed;top:0;left:0;right:0;z-index:5;pointer-events:none;
+  padding-top:calc(10px + env(safe-area-inset-top,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.hud .grp{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pill{background:var(--panel);border-radius:999px;padding:6px 16px;font-weight:800;font-variant-numeric:tabular-nums;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.pill.sun{background:var(--sun);color:var(--on-sun)}
+.meterbox{background:var(--panel);border-radius:999px;padding:6px 14px;display:flex;gap:10px;align-items:center;font-weight:800;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.meter{width:min(32vw,220px);height:14px;border-radius:99px;background:var(--line);overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--sun),var(--good));transition:width .6s}
+.iconbtn{pointer-events:auto;font:inherit;font-weight:800;border:0;border-radius:999px;padding:6px 14px;background:var(--panel);color:var(--panel-ink);cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.18)}
 
-.card{background:var(--surface);border:2px solid var(--line);border-radius:22px;padding:22px;display:flex;flex-direction:column;gap:16px}
-.eyebrow{font-size:.85rem;font-weight:700;letter-spacing:.04em;color:var(--brand)}
+.hint{position:fixed;left:0;right:0;bottom:0;z-index:5;text-align:center;pointer-events:none;
+  padding-bottom:calc(14px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.hint span{display:inline-block;background:rgba(12,34,38,.72);color:#fff;border-radius:999px;padding:6px 18px;font-weight:700;font-size:.95rem}
+.toast{position:fixed;left:50%;top:22%;transform:translate(-50%,0);z-index:6;pointer-events:none;
+  background:var(--sun);color:var(--on-sun);font-family:var(--display);font-weight:800;font-size:clamp(1.4rem,4vw,2.4rem);
+  padding:8px 28px;border-radius:999px;box-shadow:0 10px 30px rgba(0,0,0,.25);white-space:nowrap;max-width:92vw;overflow:hidden;text-overflow:ellipsis;
+  animation:pop .35s ease-out}
+@keyframes pop{from{transform:translate(-50%,20px) scale(.7);opacity:0}}
+
+.layer{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;overflow-y:auto;
+  padding-block:calc(20px + env(safe-area-inset-top,0px)) calc(20px + env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.layer.dim{background:rgba(8,26,30,.45)}
+.panel{background:var(--panel);color:var(--panel-ink);border-radius:26px;padding:clamp(18px,3vw,32px);width:min(680px,100%);
+  display:flex;flex-direction:column;gap:14px;box-shadow:0 20px 60px rgba(0,0,0,.35);margin:auto;animation:pop2 .35s ease-out}
+@keyframes pop2{from{transform:translateY(24px) scale(.96);opacity:0}}
+.eyebrow{font-size:.9rem;font-weight:800;letter-spacing:.04em;color:var(--brand)}
 .muted{color:var(--muted)}
-.hero{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center}
-@media (max-width:520px){.hero{grid-template-columns:1fr;justify-items:center;text-align:center}}
 
-.signs{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
-.sign{background:var(--surface-2);border-radius:16px;padding:12px 14px}
-.sign b{display:block;font-family:var(--display);font-size:1.1rem;color:var(--brand)}
-.types{display:flex;flex-wrap:wrap;gap:8px}
-.chip{background:var(--brand-soft);color:var(--ink);border-radius:999px;padding:3px 14px;font-weight:700;font-size:.95rem}
+.title{font-size:clamp(3rem,11vw,6.4rem);font-weight:800;color:var(--sun);line-height:1;
+  text-shadow:0 4px 0 #B07A00,0 10px 24px rgba(0,0,0,.35)}
+.start{background:rgba(12,34,38,.78);color:#fff;text-align:center;align-items:center;backdrop-filter:blur(4px)}
+.start .muted{color:#CFE5E1}
+.start .sub{font-family:var(--display);font-size:clamp(1.3rem,3.6vw,2rem);font-weight:800}
+.signs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%}
+@media (max-width:560px){.signs{grid-template-columns:1fr}}
+.sign{background:rgba(255,255,255,.1);border-radius:16px;padding:10px 12px;text-align:center}
+.sign b{display:block;color:var(--sun);font-family:var(--display);font-size:1.15rem}
+.start input{font:inherit;width:min(420px,100%);padding:12px 16px;border-radius:14px;border:2px solid transparent;background:#fff;color:var(--ink);text-align:center}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;width:100%}
 
-.btn{font:inherit;font-weight:700;border:0;border-radius:16px;padding:14px 22px;cursor:pointer;
-  background:var(--brand);color:var(--surface);transition:transform .12s}
-.btn:hover{transform:translateY(-2px)}
-.btn:active{transform:translateY(1px)}
-.btn.sun{background:var(--sun);color:var(--on-sun)}
+.btn{font:inherit;font-weight:800;border:0;border-radius:16px;padding:14px 26px;cursor:pointer;background:var(--brand);color:#fff;transition:transform .12s}
+.btn:hover{transform:translateY(-2px)} .btn:active{transform:translateY(1px)}
+.btn.sun{background:var(--sun);color:var(--on-sun);font-size:1.2rem}
 .btn.ghost{background:transparent;color:var(--brand);border:2px solid var(--brand)}
-.btn:focus-visible,.opt:focus-visible,.bubble:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
-.row{display:flex;gap:10px;flex-wrap:wrap}
-.row .btn{flex:1 1 180px}
+.start .btn.ghost{color:#fff;border-color:rgba(255,255,255,.6)}
+.btn:focus-visible,.opt:focus-visible,.iconbtn:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
 
-.situation{font-size:1.3rem;font-weight:500;background:var(--surface-2);border-radius:16px;padding:18px;border-inline-start:6px solid var(--sun)}
-.count{font-variant-numeric:tabular-nums;color:var(--muted);font-weight:700}
-
+.situation{font-size:clamp(1.15rem,2.6vw,1.45rem);font-weight:700;background:var(--brand-soft);border-radius:16px;padding:16px 18px}
 .opts{display:flex;flex-direction:column;gap:10px}
-.opt{font:inherit;text-align:start;background:var(--surface-2);color:var(--ink);border:2px solid var(--line);border-radius:16px;padding:14px 16px;cursor:pointer}
-.opt:hover{border-color:var(--brand)}
-.opt[disabled]{cursor:default}
-.opt.good{background:var(--good-soft);border-color:var(--good)}
+.opt{font:inherit;font-weight:500;text-align:start;background:#fff;color:var(--panel-ink);border:2px solid var(--line);border-radius:16px;padding:13px 16px;cursor:pointer}
+.opt:hover:not([disabled]){border-color:var(--brand)}
+.opt[disabled]{cursor:default;opacity:.75}
+.opt.good{background:var(--good-soft);border-color:var(--good);opacity:1}
 .opt.bad{background:var(--bad-soft);border-color:var(--bad)}
-
-.fb{border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.fb{border-radius:16px;padding:12px 16px;display:flex;flex-direction:column;gap:2px}
 .fb.good{background:var(--good-soft)} .fb.good b{color:var(--good)}
 .fb.bad{background:var(--bad-soft)} .fb.bad b{color:var(--bad)}
-.fb b{font-family:var(--display);font-size:1.2rem}
+.fb b{font-family:var(--display);font-size:1.25rem}
 
-.meter{height:22px;border-radius:99px;background:var(--surface-2);border:2px solid var(--line);overflow:hidden}
-.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--good),var(--brand));transition:width .4s}
-.bubbles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
-.bubble{font:inherit;font-weight:700;min-height:70px;border-radius:20px;border:2px dashed var(--line);background:var(--surface-2);color:var(--ink);cursor:pointer;padding:10px}
-.bubble.good{background:var(--good-soft);border:2px solid var(--good);color:var(--good)}
-.bubble.bad{animation:shake .4s;background:var(--bad-soft);border-color:var(--bad)}
-@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
-
-.plan{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;counter-reset:s}
-.plan div{background:var(--surface-2);border-radius:16px;padding:12px 14px}
-.plan div::before{counter-increment:s;content:"خطوة " counter(s);display:block;font-weight:700;color:var(--brand);font-size:.9rem}
-
-label.check{display:flex;gap:10px;align-items:flex-start;background:var(--surface-2);border-radius:14px;padding:10px 14px;cursor:pointer}
-label.check input{width:22px;height:22px;margin-top:4px;accent-color:var(--brand)}
-input[type=text]{font:inherit;width:100%;padding:12px 14px;border-radius:14px;border:2px solid var(--line);background:var(--surface-2);color:var(--ink)}
-
-.cert{text-align:center;align-items:center;border:4px double var(--sun);background:var(--surface)}
-.cert .name{font-family:var(--display);font-size:clamp(2rem,8vw,3rem);font-weight:800;color:var(--brand);line-height:1.2}
-.rank{background:var(--sun);color:var(--on-sun);border-radius:999px;padding:4px 18px;font-weight:800;font-family:var(--display);font-size:1.2rem}
-.pledges{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
-.pledges li::before{content:"✔ ";color:var(--good);font-weight:700}
-
+.cert{text-align:center;align-items:center;border:5px double var(--sun)}
+.cert .name{font-family:var(--display);font-size:clamp(2.2rem,8vw,3.6rem);font-weight:800;color:var(--brand);line-height:1.15}
+.rank{background:var(--sun);color:var(--on-sun);border-radius:999px;padding:4px 20px;font-weight:800;font-family:var(--display);font-size:1.3rem}
+.promise{background:var(--brand-soft);border-radius:16px;padding:12px 16px;font-weight:700}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 
-<div class="wrap">
-  <header class="top">
-    <div class="brand">
-      <svg width="34" height="38" viewBox="0 0 34 38" aria-hidden="true"><path d="M17 2 31 7v10c0 9-6 15-14 19C9 32 3 26 3 17V7z" fill="var(--brand)"/><path d="M17 27c-5-3-8-6-8-9a4 4 0 0 1 8-1 4 4 0 0 1 8 1c0 3-3 6-8 9z" fill="var(--sun)"/></svg>
-      درع الصداقة
+<canvas id="c" aria-label="ساحة المدرسة ثلاثية الأبعاد"></canvas>
+
+<div class="hud" id="hud" hidden>
+  <div class="grp">
+    <span class="pill sun">نقاط: <span id="hScore">0</span></span>
+    <span class="pill">مواقف: <span id="hMis">0</span> / 5</span>
+    <span class="pill">نجوم: <span id="hStar">0</span> / 8</span>
+  </div>
+  <div class="grp">
+    <span class="meterbox">نور المدرسة <span class="meter"><i id="hMeter"></i></span></span>
+    <button class="iconbtn" id="snd">الصوت: شغال</button>
+    <button class="iconbtn" id="fs">شاشة كاملة</button>
+  </div>
+</div>
+<div class="hint" id="hint" hidden><span>دوس على الأرض عشان تمشي، أو استخدم الأسهم. روح عند الدواير الحمرا وصلّح الموقف.</span></div>
+<div id="toastBox"></div>
+
+<div class="layer" id="startL">
+  <div class="panel start">
+    <span class="eyebrow" style="color:var(--sun)">لعبة ثلاثية الأبعاد · من سن ٩ لـ ١٣ سنة</span>
+    <div class="title">لا للتنمر</div>
+    <div class="sub">درع الصداقة</div>
+    <p class="muted">المدرسة ضلمة وحزينة عشان فيها تنمر. لف في الساحة، صلّح ٥ مواقف تنمر، ولمّ نجوم الكلام الحلو، والمدرسة هتنوّر.</p>
+    <div class="signs">
+      <div class="sign"><b>مقصود</b>عارف إنه بيضايقه</div>
+      <div class="sign"><b>بيتكرر</b>مش مرة وخلاص</div>
+      <div class="sign"><b>استقواء</b>أقوى على أضعف</div>
     </div>
-    <div class="score" aria-live="polite">نقاط الشجاعة: <span id="score">0</span></div>
-  </header>
-  <div class="steps" id="steps" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
-  <main id="app"></main>
+    <label for="nm" class="muted">اكتب اسمك عشان يتكتب على شهادتك</label>
+    <input type="text" id="nm" maxlength="30" placeholder="اسمك هنا">
+    <div class="row">
+      <button class="btn sun" id="go">ابدأ اللعبة</button>
+      <button class="btn ghost" id="fs2">شاشة كاملة</button>
+    </div>
+  </div>
 </div>
 
+<div class="layer dim" id="dlgL" hidden>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="dT">
+    <span class="eyebrow" id="dN"></span>
+    <h2 id="dT">تعمل إيه؟</h2>
+    <p class="situation" id="dQ"></p>
+    <div class="opts" id="dO"></div>
+    <div id="dF"></div>
+    <div class="row" style="justify-content:flex-start">
+      <button class="btn sun" id="dGo" hidden>يلا نصلّح الموقف</button>
+      <button class="btn ghost" id="dX">مش دلوقتي</button>
+    </div>
+  </div>
+</div>
+
+<div class="layer dim" id="certL" hidden>
+  <div class="panel cert">
+    <span class="eyebrow">شهادة مدرسة بلا تنمر</span>
+    <h1 style="font-size:clamp(1.6rem,5vw,2.4rem)">المدرسة نوّرت بيك</h1>
+    <p>نشهد إن</p>
+    <div class="name" id="cName"></div>
+    <span class="rank" id="cRank"></span>
+    <p>صلّح ٥ مواقف تنمر وجمع <b id="cScore"></b> من <b>140</b> نقطة.</p>
+    <p class="promise">وعدي: مش هتنمر على حد تاني، وهقف جنب أي حد بيتنمر عليه، وهحكي لكبير بثق فيه لو شفت تنمر.</p>
+    <p class="muted">صوّروا الشاشة دي وعلّقوها في الفصل.</p>
+    <div class="row"><button class="btn" id="again">العب تاني</button></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 (function(){
-const SITUATIONS=[
- {t:"عمر بيقول لزميله كل يوم إنه «تخين» وكل الفصل بيضحك عليه.",ans:true,type:"تنمر لفظي",why:"بيتكرر كل يوم ومقصود يضايقه قدام الناس."},
- {t:"سارة وصاحبتها اختلفوا مرة واحدة على لعبة وزعلوا من بعض، وتاني يوم اتصالحوا.",ans:false,type:"خلاف عادي",why:"الخلاف بيحصل بين الأصحاب. مش متكرر ومفيش حد أقوى بيأذي حد أضعف."},
- {t:"مجموعة بنات بيمنعوا مريم تقعد معاهم في الفسحة كل يوم وبيقولوا لها «إنتي مش زينا».",ans:true,type:"تنمر اجتماعي (عزل)",why:"إنك تبعد حد عن الناس قصد وبشكل متكرر ده تنمر حتى لو مفيش ضرب."},
- {t:"حد نشر صورة زميله على جروب الفصل وكتب عليها تعليقات بتتريق على شكله.",ans:true,type:"تنمر إلكتروني",why:"التنمر على الموبايل والإنترنت تنمر حقيقي، والصورة بتفضل موجودة ويشوفها ناس كتير."},
- {t:"يوسف الكبير بيزق زميله الصغير ويخطف منه الساندويتش كل يوم.",ans:true,type:"تنمر جسدي",why:"فيه أذى للجسم، ومتكرر، ويوسف بيستغل إنه أقوى."},
- {t:"كريم شاط الكورة بالغلط فجت في رجل صاحبه، فجري عليه واعتذر.",ans:false,type:"حادثة",why:"مكانش قاصد، واعتذر. التنمر بيكون مقصود."},
- {t:"صاحبك قالك بأدب: «رسمتك حلوة، بس لو زودت ألوان هتبقى أحلى».",ans:false,type:"نصيحة بلطف",why:"الرأي المحترم اللي هدفه يساعدك مش تنمر."},
- {t:"ولاد في الفصل بيقلدوا طريقة كلام زميلهم اللي بيتهته عشان يضحّكوا الناس عليه.",ans:true,type:"تنمر لفظي",why:"السخرية من حاجة الإنسان مالوش ذنب فيها بتجرح جامد."}
+const T=THREE,$=id=>document.getElementById(id);
+
+/* ---------- data ---------- */
+const MISSIONS=[
+ {at:[-22,-8],bullies:2,n:"موقف ١ · النضارة",q:"ولاد بيتريقوا على زميلكم عشان لابس نضارة كبيرة، وهو خلاص هيعيط.",o:[
+  {t:"أقف جنبه وأقول بهدوء «كفاية، ده مش هزار»، وآخده نلعب سوا.",g:1,f:"برافو! لما حد يقف جنب المظلوم، المتنمر غالبًا بيوقف."},
+  {t:"أضحك معاهم عشان مبقاش غريب.",g:0,f:"الضحك بيدي المتنمر إحساس إن الناس معاه، فبيكمل."},
+  {t:"أمشي وأعمل نفسي مش شايف.",g:0,f:"السكوت بيخلي زميلك يحس إنه لوحده خالص. جرّب تاني."}]},
+ {at:[24,-12],bullies:0,n:"موقف ٢ · الطالب الجديد",q:"في طالب جديد بيقعد لوحده في الفسحة كل يوم، ومحدش بيكلمه.",o:[
+  {t:"أتريق على لهجته عشان مختلفة.",g:0,f:"الاختلاف مش عيب. التريقة على حد عشان مختلف تنمر."},
+  {t:"أروح أعرّفه بنفسي وأعزمه يلعب معانا.",g:1,f:"تصرف بطل! كلمة لطيفة واحدة ممكن تغيّر يومه كله."},
+  {t:"أسيبه، هو أكيد بيحب يقعد لوحده.",g:0,f:"ممكن يكون مكسوف بس ومستني حد يكلمه. جرّب تاني."}]},
+ {at:[-24,20],bullies:1,big:1,n:"موقف ٣ · المصروف",q:"ولد أكبر بياخد مصروف زميلك كل يوم ويقوله «لو قلت لحد هتشوف».",o:[
+  {t:"أقول لزميلي يديله الفلوس ويسكت.",g:0,f:"السكوت مش هيوقفه، وهيفضل يعمل كده كل يوم."},
+  {t:"أضرب الولد الكبير.",g:0,f:"ممكن حد يتأذي، وممكن إنت كمان تتعاقب. فيه حل أأمن."},
+  {t:"أروح أنا وزميلي نحكي للأخصائي الاجتماعي أو للمعلمة.",g:1,f:"صح جدًا. إنك تحكي لكبير مش «فتنة»، ده حماية."}]},
+ {at:[24,20],bullies:2,phone:1,n:"موقف ٤ · جروب الفصل",q:"أصحابك بيتريقوا على صورة زميلتكم على جروب الواتساب، وعايزينك تبعت إيموجي ضحك.",o:[
+  {t:"أبعت إيموجي صغير، مش مشكلة.",g:0,f:"حتى الإيموجي بيشارك في الأذى، والزميلة هتشوفه."},
+  {t:"أرفض وأكتب «بلاش كده يا جماعة»، وأبلّغ كبير لو كمّلوا.",g:1,f:"ده اللي اسمه شجاعة. التنمر على النت تنمر حقيقي."},
+  {t:"أخرج من الجروب ومعلّقش.",g:0,f:"كويس إنك ماشاركتش، بس الزميلة لسه محتاجة حد يقف معاها."}]},
+ {at:[0,-28],bullies:2,n:"موقف ٥ · التهتهة",q:"ولاد بيقلّدوا طريقة كلام زميلهم اللي بيتهته عشان يضحّكوا الفصل عليه.",o:[
+  {t:"أقول لهم «التريقة دي بتجرح»، وأقول لزميلي «كمّل براحتك، إحنا سامعينك».",g:1,f:"رائع! إنت دافعت عنه وخليته يحس إنه مقبول زي ما هو."},
+  {t:"أقلّده أنا كمان، هو هزار.",g:0,f:"الهزار هزار لما الكل يضحك. لو حد بيتجرح يبقى تنمر."},
+  {t:"أستنى المعلمة هي اللي تتصرف.",g:0,f:"ممكن المعلمة متكونش شايفة. تقدر تتصرف دلوقتي وتقولها كمان."}]}
 ];
-const SCENES=[
- {q:"شفت ولاد بيتريقوا على زميلك عشان لابس نضارة كبيرة، وهو باين عليه إنه زعلان.",o:[
-  {t:"أضحك معاهم عشان مبقاش غريب.",s:0,f:"الضحك بيدي المتنمر إحساس إن الناس معاه، فبيكمل."},
-  {t:"أقف جنبه وأقول بهدوء «كفاية، ده مش هزار»، وآخده نلعب في حتة تانية.",s:20,f:"برافو! وقفتك جنبه بتفرق جدًا، وكتير المتنمر بيوقف لما يلاقي حد مش موافق."},
-  {t:"أمشي وأعمل نفسي مش شايف.",s:5,f:"أحسن من الضحك، بس السكوت ممكن يخلي زميلك يحس إنه لوحده. على الأقل احكي لمعلم."}]},
- {q:"حد بيبعتلك رسايل وحشة على الواتساب ويهددك إنه هيفضحك قدام الفصل.",o:[
-  {t:"أرد عليه بشتيمة أوحش.",s:0,f:"الرد بالشتيمة بيكبّر المشكلة، وممكن إنت كمان تتعاقب."},
-  {t:"أمسح الرسايل وأسكت ومقولش لحد.",s:5,f:"مسح الرسايل بيضيع الدليل، والسكوت بيخليك شايل الحمل لوحدك."},
-  {t:"آخد سكرين شوت للرسايل، أعمل بلوك، وأوري أهلي أو المعلمة.",s:20,f:"ده الصح بالظبط: دليل + بلوك + كبير بتثق فيه."}]},
- {q:"في طالب جديد في الفصل، بيقعد لوحده في الفسحة كل يوم.",o:[
-  {t:"أعزمه يلعب معانا أو يقعد معانا.",s:20,f:"تصرف بطل! كلمة واحدة لطيفة ممكن تغير يومه كله."},
-  {t:"أتريق على لهجته عشان مختلفة.",s:0,f:"الاختلاف مش عيب. التريقة دي تنمر بيجرحه."},
-  {t:"أسيبه، أكيد هو بيحب يقعد لوحده.",s:5,f:"ممكن يكون مكسوف بس. جرب تسأله وإنت هتعرف."}]},
- {q:"إنت قلت هزار على زميلك قدام الفصل، وبعدين لاحظت إنه زعل ومشي.",o:[
-  {t:"أقول «إيه ده، ده كان مجرد هزار!»",s:0,f:"الهزار هزار لما الاتنين يضحكوا. لو واحد زعل، يبقى جرحه."},
-  {t:"أروح أعتذر له بجد ومكررهاش تاني.",s:20,f:"الاعتذار شجاعة كبيرة. الأقوياء بيعترفوا بغلطهم."},
-  {t:"أتجاهله لحد ما ينسى.",s:5,f:"هو ممكن مينساش. اعتذار بسيط بيصلح حاجات كتير."}]},
- {q:"ولد أكبر منك بياخد مصروفك كل يوم ويقولك «لو قلت لحد هتشوف».",o:[
-  {t:"أديله الفلوس وأسكت عشان ميأذنيش.",s:0,f:"السكوت مش هيوقفه. التهديد ده بالذات لازم كبير يعرف بيه."},
-  {t:"أحكي لأهلي أو للأخصائي الاجتماعي في المدرسة.",s:20,f:"صح جدًا. الحكي لكبير بتثق فيه مش «فتنة»، ده حماية ليك."},
-  {t:"أتخانق معاه وأضربه.",s:5,f:"ممكن تتأذي، وممكن تتعاقب إنت كمان. الكبار يقدروا يوقفوه بأمان."}]},
- {q:"أصحابك بيضغطوا عليك إنك تبعت «إيموجي ضحك» على صورة بيتريقوا بيها على زميلة.",o:[
-  {t:"أبعت عشان مبقاش برا الشلة.",s:0,f:"حتى إيموجي صغير بيشارك في الأذى، والزميلة هتشوفه."},
-  {t:"أرفض وأكتب «بلاش الكلام ده يا جماعة»، وأبلغ لو كملوا.",s:20,f:"ده اللي اسمه شجاعة. الصاحب الحقيقي مش هيزعلك عشان عملت الصح."},
-  {t:"أخرج من الجروب ومعلقش.",s:5,f:"كويس إنك مشاركتش، بس الزميلة لسه محتاجة حد يقف معاها."}]}
-];
-const WORDS=[
- {t:"تعالَ العب معانا",k:1},{t:"إنت فاشل",k:0},{t:"فكرتك حلوة",k:1},{t:"محدش عايزك هنا",k:0},
- {t:"إنت كويس؟",k:1},{t:"شكلك يضحّك",k:0},{t:"شكرًا إنك ساعدتني",k:1},{t:"روح يا قصير",k:0},
- {t:"أنا آسف",k:1},{t:"إنت غبي",k:0},{t:"أنا جنبك",k:1},{t:"مالكش لازمة",k:0}
-];
-const PLEDGES=["مش هتريق على حد بسبب شكله أو كلامه أو لبسه.","لو شفت حد بيتنمر عليه، هقف جنبه أو أحكي لكبير.","هعتذر لو جرحت حد، حتى لو من غير قصد.","هكون لطيف مع الطلاب الجداد واللي لوحدهم."];
-const MAX=SITUATIONS.length*10+SCENES.length*20+6*5;
+const WORDS=["إنت مهم","تعالَ العب معانا","أنا جنبك","فكرتك حلوة","شكرًا ليك","أنا آسف","إنت كويس؟","برافو عليك"];
+const STARS_AT=[[-8,2],[10,-2],[-34,4],[36,4],[-12,34],[12,34],[-36,-24],[38,-26]];
 
-let S={score:0,level:0,i:0,found:0,name:"",picked:[]};
-const app=document.getElementById("app"),scoreEl=document.getElementById("score");
-const h=(html)=>{app.innerHTML=html;window.scrollTo({top:0,behavior:"smooth"});};
-const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-function add(n){S.score+=n;scoreEl.textContent=S.score;}
-function steps(){[...document.querySelectorAll("#steps span")].forEach((s,k)=>{s.className=k<S.level-1?"on":k===S.level-1?"now":"";});}
-function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+/* ---------- renderer & scene ---------- */
+const canvas=$("c");
+const renderer=new T.WebGLRenderer({canvas,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;
 
-function home(){S={score:0,level:0,i:0,found:0,name:"",picked:[]};scoreEl.textContent=0;steps();
- h(`<section class="card">
-  <div class="hero">
-   <svg width="110" height="124" viewBox="0 0 34 38" aria-hidden="true"><path d="M17 2 31 7v10c0 9-6 15-14 19C9 32 3 26 3 17V7z" fill="var(--brand)"/><path d="M17 27c-5-3-8-6-8-9a4 4 0 0 1 8-1 4 4 0 0 1 8 1c0 3-3 6-8 9z" fill="var(--sun)"/></svg>
-   <div style="display:flex;flex-direction:column;gap:8px">
-    <span class="eyebrow">لعبة للأطفال من سن ٩ لـ ١٣ سنة</span>
-    <h1>درع الصداقة</h1>
-    <p class="muted">٤ مراحل تتعلم فيها يعني إيه تنمر، وإزاي توقفه، وتطلع في الآخر بشهادة «سفير ضد التنمر».</p>
-   </div>
-  </div>
-  <h3>قبل ما نبدأ: إمتى يبقى الموضوع تنمر؟</h3>
-  <div class="signs">
-   <div class="sign"><b>مقصود</b>اللي بيعمله عارف إنه بيضايق التاني.</div>
-   <div class="sign"><b>متكرر</b>بيحصل أكتر من مرة، مش غلطة مرة واحدة.</div>
-   <div class="sign"><b>قوة مش متساوية</b>حد أكبر أو معاه ناس أكتر بيستقوى على حد.</div>
-  </div>
-  <h3>أنواع التنمر</h3>
-  <div class="types"><span class="chip">لفظي: شتيمة وتريقة</span><span class="chip">جسدي: ضرب وزق</span><span class="chip">اجتماعي: عزل ونشر إشاعات</span><span class="chip">إلكتروني: على الموبايل والنت</span></div>
-  <button class="btn sun" id="go">يلا نبدأ المرحلة الأولى</button>
- </section>`);
- document.getElementById("go").onclick=()=>{S.level=1;S.i=0;l1();};
+const scene=new T.Scene();
+const SKY0=new T.Color(0x8796A3),SKY1=new T.Color(0x7FCBFF);
+scene.background=SKY0.clone();scene.fog=new T.Fog(SKY0.clone(),70,150);
+const camera=new T.PerspectiveCamera(50,1,.1,400);
+const hemi=new T.HemisphereLight(0xffffff,0x6f9a55,.55);scene.add(hemi);
+const sun=new T.DirectionalLight(0xfff2d6,.75);sun.position.set(30,55,25);sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-70,right:70,top:70,bottom:-70,near:1,far:160});
+scene.add(sun);
+
+const M=(c,o)=>new T.MeshStandardMaterial(Object.assign({color:c,roughness:.85,flatShading:true},o||{}));
+function mesh(geo,mat,x=0,y=0,z=0,parent=scene){const m=new T.Mesh(geo,mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;}
+let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+
+/* ground, court, path */
+const ground=mesh(new T.PlaneGeometry(200,200),M(0x79C16A));ground.rotation.x=-Math.PI/2;ground.castShadow=false;
+const court=mesh(new T.PlaneGeometry(22,14),M(0xE59A57));court.rotation.x=-Math.PI/2;court.position.set(0,.02,8);court.castShadow=false;
+const cline=mesh(new T.RingGeometry(2.6,2.9,40),M(0xffffff));cline.rotation.x=-Math.PI/2;cline.position.set(0,.04,8);cline.castShadow=false;
+const path=mesh(new T.PlaneGeometry(6,40),M(0xE8D9B5));path.rotation.x=-Math.PI/2;path.position.set(0,.015,-22);path.castShadow=false;
+
+/* school building */
+const school=new T.Group();school.position.set(0,0,-50);scene.add(school);
+mesh(new T.BoxGeometry(64,16,12),M(0xF3D9A4),0,8,0,school);
+mesh(new T.BoxGeometry(66,1.6,14),M(0xC4563E),0,16.8,0,school);
+mesh(new T.BoxGeometry(14,22,13),M(0xEFCB8A),0,11,0.5,school);
+mesh(new T.ConeGeometry(10,6,4),M(0xC4563E),0,25,0.5,school).rotation.y=Math.PI/4;
+const winM=M(0x9ED6F0,{emissive:0x335566,emissiveIntensity:.2});
+for(let r=0;r<2;r++)for(let i=-6;i<=6;i++){if(Math.abs(i)<=1)continue;mesh(new T.BoxGeometry(2.6,2.6,.3),winM,i*4.4,5+r*6,6.1,school);}
+mesh(new T.BoxGeometry(5,7,.4),M(0x7A4B2A),0,3.5,7.1,school);
+/* sign with Arabic text */
+const sc=document.createElement("canvas");sc.width=1024;sc.height=200;const sx=sc.getContext("2d");
+const signTex=new T.CanvasTexture(sc);
+function drawSign(){sx.fillStyle="#0F7A71";sx.fillRect(0,0,1024,200);sx.fillStyle="#FFC233";sx.fillRect(0,180,1024,20);
+ sx.fillStyle="#fff";sx.font='800 110px "Baloo Bhaijaan 2", Tajawal, sans-serif';sx.textAlign="center";sx.textBaseline="middle";sx.direction="rtl";
+ sx.fillText("مدرسة بلا تنمر",512,98);signTex.needsUpdate=true;}
+drawSign();if(document.fonts)document.fonts.load('800 110px "Baloo Bhaijaan 2"').then(drawSign).catch(()=>{});
+const sign=new T.Mesh(new T.PlaneGeometry(20,3.9),new T.MeshBasicMaterial({map:signTex}));sign.position.set(0,13.6,7.05);school.add(sign);
+/* flag */
+mesh(new T.CylinderGeometry(.15,.15,14,8),M(0xdddddd),10,7,-40);
+const flag=mesh(new T.BoxGeometry(4,2.4,.1),M(0xFFC233),12,12.6,-40);
+
+/* trees */
+function tree(x,z,s=1){const g=new T.Group();g.position.set(x,0,z);g.scale.setScalar(s);scene.add(g);
+ mesh(new T.CylinderGeometry(.4,.55,3,7),M(0x8A5A34),0,1.5,0,g);
+ mesh(new T.IcosahedronGeometry(2.4,0),M(0x3E9B4F),0,4.4,0,g);mesh(new T.IcosahedronGeometry(1.7,0),M(0x4FB15C),.6,6,.3,g);}
+for(let i=0;i<34;i++){const a=i/34*Math.PI*2,r=58+rnd()*14;const x=Math.cos(a)*r,z=Math.sin(a)*r;if(z<-40&&Math.abs(x)<40)continue;tree(x,z,.9+rnd()*.6);}
+[[-40,-6],[42,-2],[-10,46],[40,40],[-42,40]].forEach(p=>tree(p[0],p[1],1.1));
+/* benches */
+function bench(x,z,ry){const g=new T.Group();g.position.set(x,0,z);g.rotation.y=ry;scene.add(g);
+ mesh(new T.BoxGeometry(4,.3,1.1),M(0xB9783F),0,1,0,g);mesh(new T.BoxGeometry(4,1,.25),M(0xB9783F),0,1.6,-.5,g);
+ mesh(new T.BoxGeometry(.3,1,1),M(0x555555),-1.7,.5,0,g);mesh(new T.BoxGeometry(.3,1,1),M(0x555555),1.7,.5,0,g);}
+bench(-14,8,Math.PI/2);bench(14,8,-Math.PI/2);bench(30,-12,0);
+/* sky clouds */
+const skyClouds=[];
+for(let i=0;i<9;i++){const g=new T.Group();g.position.set(-90+i*22,30+rnd()*10,-60+rnd()*80);scene.add(g);
+ for(let k=0;k<4;k++){const m=new T.Mesh(new T.IcosahedronGeometry(3+rnd()*2,0),M(0xffffff,{roughness:1}));m.position.set(k*3-4,rnd()*2,rnd()*2);g.add(m);}skyClouds.push(g);}
+
+/* ---------- shapes for hearts and stars ---------- */
+const hs=new T.Shape();hs.moveTo(5,5);hs.bezierCurveTo(5,5,4,0,0,0);hs.bezierCurveTo(-6,0,-6,7,-6,7);hs.bezierCurveTo(-6,11,-3,15.4,5,19);
+hs.bezierCurveTo(12,15.4,16,11,16,7);hs.bezierCurveTo(16,7,16,0,10,0);hs.bezierCurveTo(7,0,5,5,5,5);
+const heartGeo=new T.ExtrudeGeometry(hs,{depth:4,bevelEnabled:true,bevelSize:1,bevelThickness:1,bevelSegments:2});heartGeo.center();heartGeo.rotateZ(Math.PI);heartGeo.scale(.05,.05,.05);
+const ss=new T.Shape();for(let i=0;i<10;i++){const a=i/10*Math.PI*2+Math.PI/2,r=i%2?.45:1;i?ss.lineTo(Math.cos(a)*r,Math.sin(a)*r):ss.moveTo(Math.cos(a)*r,Math.sin(a)*r);}
+const starGeo=new T.ExtrudeGeometry(ss,{depth:.3,bevelEnabled:true,bevelSize:.08,bevelThickness:.08,bevelSegments:1});starGeo.center();
+const heartM=M(0xFF5C7A,{emissive:0xFF2F55,emissiveIntensity:.35});
+const starM=M(0xFFC233,{emissive:0xFFAA00,emissiveIntensity:.55,metalness:.3,roughness:.4});
+
+/* ---------- kids ---------- */
+const kids=[];
+const SKINS=[0xF1C9A5,0xD9A27A,0xB57A55,0x8D5A3B],HAIRS=[0x2B1B12,0x4A2E1D,0x111111,0x6B4423];
+function makeKid(o){
+ const g=new T.Group();scene.add(g);
+ const skin=M(o.skin),shirt=M(o.shirt),pants=M(o.pants||0x2F4858),hair=M(o.hair);
+ const legs=[],arms=[];
+ [-1,1].forEach(s=>{const p=new T.Group();p.position.set(s*.22,.85,0);g.add(p);mesh(new T.CylinderGeometry(.17,.15,.85,8),pants,0,-.42,0,p);legs.push(p);
+  const a=new T.Group();a.position.set(s*.6,1.75,0);g.add(a);mesh(new T.CylinderGeometry(.13,.12,.8,8),shirt,0,-.38,0,a);mesh(new T.SphereGeometry(.13,8,6),skin,0,-.82,0,a);arms.push(a);});
+ mesh(new T.CylinderGeometry(.44,.52,1.05,10),shirt,0,1.35,0,g);
+ const head=new T.Group();head.position.set(0,2.32,0);g.add(head);
+ mesh(new T.SphereGeometry(.52,14,12),skin,0,0,0,head);
+ mesh(new T.SphereGeometry(.55,14,8,0,Math.PI*2,0,Math.PI/2.3),hair,0,.04,-.02,head);
+ const eyeM=M(0x111111);mesh(new T.SphereGeometry(.075,8,6),eyeM,-.18,.06,.46,head);mesh(new T.SphereGeometry(.075,8,6),eyeM,.18,.06,.46,head);
+ const mouth=mesh(new T.TorusGeometry(.13,.035,6,12,Math.PI),M(0x7A2230),0,-.18,.47,head);
+ const brows=new T.Group();head.add(brows);
+ mesh(new T.BoxGeometry(.24,.06,.06),eyeM,-.18,.24,.47,brows).rotation.z=-.45;mesh(new T.BoxGeometry(.24,.06,.06),eyeM,.18,.24,.47,brows).rotation.z=.45;
+ if(o.glasses){const gm=M(0x222222);[-.18,.18].forEach(x=>{const r=mesh(new T.TorusGeometry(.13,.025,6,14),gm,x,.06,.5,head);});mesh(new T.BoxGeometry(.12,.03,.03),gm,0,.08,.51,head);}
+ if(o.phone)mesh(new T.BoxGeometry(.28,.46,.06),M(0x1E1E2A,{emissive:0x3366ff,emissiveIntensity:.4}),0,-.9,.12,arms[1]);
+ g.scale.setScalar(o.scale||1);
+ const k={g,head,mouth,brows,shirt,legs,arms,face:0,faceT:0,target:null,speed:3.2,jumpUntil:0,phone:o.phone,wander:o.wander,mood:"happy",phase:rnd()*6};
+ k.setMood=m=>{k.mood=m;mouth.rotation.z=m==="sad"?0:Math.PI;brows.visible=m==="angry";head.rotation.x=m==="sad"?.28:0;};
+ k.setMood(o.mood||"happy");g.position.set(o.x||0,0,o.z||0);kids.push(k);return k;
 }
+const pickSkin=()=>SKINS[Math.floor(rnd()*SKINS.length)],pickHair=()=>HAIRS[Math.floor(rnd()*HAIRS.length)];
+const FRIENDLY=[0x4FA3E3,0x58C27D,0xF08BB4,0xB487E8,0x3FC1B5,0xF3A04B];
 
-function l1(){steps();const s=SITUATIONS[S.i];
- h(`<section class="card">
-  <div class="top"><span class="eyebrow">المرحلة ١ · المحقق الذكي</span><span class="count">${S.i+1} / ${SITUATIONS.length}</span></div>
-  <h2>ده تنمر ولا لأ؟</h2>
-  <p class="situation">${s.t}</p>
-  <div class="row" id="ans"><button class="btn" data-a="1">ده تنمر</button><button class="btn ghost" data-a="0">مش تنمر</button></div>
-  <div id="fb"></div>
- </section>`);
- document.querySelectorAll("#ans button").forEach(b=>b.onclick=()=>{
-  const ok=(b.dataset.a==="1")===s.ans;if(ok)add(10);
-  document.getElementById("ans").hidden=true;
-  document.getElementById("fb").innerHTML=`<div class="fb ${ok?"good":"bad"}"><b>${ok?"إجابة صح! +١٠":"مش بالظبط"}</b><span><span class="chip">${s.type}</span></span><span>${s.why}</span></div>
-   <div class="row" style="margin-top:12px"><button class="btn sun" id="nx">${S.i<SITUATIONS.length-1?"اللي بعده":"على المرحلة التانية"}</button></div>`;
-  const nx=document.getElementById("nx");nx.focus();
-  nx.onclick=()=>{S.i++;if(S.i<SITUATIONS.length)l1();else{S.level=2;S.i=0;l2();}};
+/* player */
+const player=makeKid({skin:0xE7B58C,hair:0x2B1B12,shirt:0xFFC233,pants:0x1F5C8C,scale:1.12});
+const halo=mesh(new T.RingGeometry(1.1,1.45,40),new T.MeshBasicMaterial({color:0xFFC233,transparent:true,opacity:.8}),0,.06,0);halo.rotation.x=-Math.PI/2;halo.castShadow=false;
+const cape=mesh(new T.PlaneGeometry(1.1,1.5),M(0x0F7A71,{side:T.DoubleSide}),0,1.45,-.55,player.g);cape.rotation.x=.18;
+const arrow=mesh(new T.ConeGeometry(.45,1.2,4),M(0xFFC233,{emissive:0xFFAA00,emissiveIntensity:.6}),0,.5,0);arrow.castShadow=false;
+const tapRing=mesh(new T.RingGeometry(.5,.75,32),new T.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0}),0,.07,0);tapRing.rotation.x=-Math.PI/2;tapRing.castShadow=false;
+player.g.position.set(0,0,10);
+
+/* missions in the world */
+MISSIONS.forEach((m,mi)=>{
+ const [x,z]=m.at;m.center=new T.Vector3(x,0,z);m.solved=false;m.armed=true;m.tries=0;
+ m.victim=makeKid({x,z,skin:pickSkin(),hair:pickHair(),shirt:FRIENDLY[mi],mood:"sad",glasses:mi===0});
+ m.victim.face=m.victim.faceT=0;
+ m.bulliesK=[];
+ const spots=m.bullies===1?[[1.9,.7]]:[[-1.9,1.1],[1.9,1.1]];
+ spots.slice(0,m.bullies).forEach(([dx,dz])=>{const b=makeKid({x:x+dx,z:z+dz,skin:pickSkin(),hair:pickHair(),shirt:0x5B2A34,pants:0x222831,mood:"angry",scale:m.big?1.35:1,phone:m.phone});
+  b.face=b.faceT=Math.atan2(-dx,-dz);if(m.phone){b.arms[1].rotation.x=-1.1;}m.bulliesK.push(b);});
+ /* rain cloud */
+ const cl=new T.Group();cl.position.set(x,4.3,z);scene.add(cl);
+ [[-.5,0],[.4,.1],[0,.3]].forEach(([a,b])=>{const c=new T.Mesh(new T.IcosahedronGeometry(.7,0),M(0x6B7480));c.position.set(a,b,0);cl.add(c);});
+ cl.drops=[];for(let i=0;i<5;i++){const d=new T.Mesh(new T.BoxGeometry(.05,.3,.05),new T.MeshBasicMaterial({color:0x7FB6E8}));d.position.set(-.7+i*.35,-.5-rnd(),0);cl.add(d);cl.drops.push(d);}
+ m.cloud=cl;
+ /* warning marker */
+ const mk=new T.Group();mk.position.set(x,7,z);scene.add(mk);
+ const red=M(0xE8423B,{emissive:0xE8423B,emissiveIntensity:.6});
+ mesh(new T.CylinderGeometry(.22,.12,1,8),red,0,.3,0,mk);mesh(new T.SphereGeometry(.2,10,8),red,0,-.5,0,mk);
+ m.marker=mk;
+ const ring=mesh(new T.RingGeometry(3.6,4.1,48),new T.MeshBasicMaterial({color:0xE8423B,transparent:true,opacity:.6}),x,.08,z);ring.rotation.x=-Math.PI/2;ring.castShadow=false;m.ring=ring;
+});
+
+/* wandering happy kids */
+for(let i=0;i<5;i++)makeKid({x:-20+i*10,z:28-rnd()*10,skin:pickSkin(),hair:pickHair(),shirt:FRIENDLY[i%6],wander:1});
+
+/* stars */
+const stars=STARS_AT.map(([x,z],i)=>{const s=mesh(starGeo,starM,x,1.8,z);s.word=WORDS[i];s.got=false;return s;});
+
+/* ---------- particles ---------- */
+const parts=[];
+const sparkGeo=new T.OctahedronGeometry(.15,0);
+function burst(pos,kind,n){for(let i=0;i<n;i++){
+ const m=kind==="heart"?new T.Mesh(heartGeo,heartM):new T.Mesh(sparkGeo,new T.MeshBasicMaterial({color:[0xFFC233,0xffffff,0xFF8FB0,0x7FE3D4][i%4]}));
+ m.position.copy(pos);scene.add(m);const a=rnd()*Math.PI*2,sp=2+rnd()*4;
+ parts.push({m,v:new T.Vector3(Math.cos(a)*sp,4+rnd()*6,Math.sin(a)*sp),life:1.6+rnd(),spin:rnd()*6,g:kind==="heart"?4:9});}}
+const confetti=[];
+function confettiRain(){const cols=[0xFFC233,0xFF5C7A,0x4FA3E3,0x58C27D,0xB487E8,0xffffff];
+ for(let i=0;i<260;i++){const m=new T.Mesh(new T.PlaneGeometry(.35,.22),new T.MeshBasicMaterial({color:cols[i%6],side:T.DoubleSide}));
+  m.position.set(player.g.position.x+(rnd()-.5)*40,14+rnd()*20,player.g.position.z+(rnd()-.5)*40);scene.add(m);confetti.push({m,s:1.5+rnd()*2,r:rnd()*5});}}
+
+/* ---------- sound ---------- */
+let AC=null,soundOn=true;
+function tone(f,d,type="sine",v=.13,delay=0){if(!AC||!soundOn)return;const o=AC.createOscillator(),g=AC.createGain(),t=AC.currentTime+delay;
+ o.type=type;o.frequency.value=f;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.02);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g).connect(AC.destination);o.start(t);o.stop(t+d+.05);}
+const sfx={star(){tone(988,.18);tone(1480,.3,"sine",.1,.08);},good(){[523,659,784,1046].forEach((f,i)=>tone(f,.45,"triangle",.12,i*.11));},
+ bad(){tone(196,.4,"sawtooth",.05);},win(){[523,659,784,1046,784,1046,1318].forEach((f,i)=>tone(f,.5,"triangle",.12,i*.14));}};
+
+/* ---------- state & HUD ---------- */
+const S={mode:"intro",score:0,solved:0,stars:0,paused:false,name:"",target:null,keys:{}};
+function hud(){$("hScore").textContent=S.score;$("hMis").textContent=S.solved;$("hStar").textContent=S.stars;
+ $("hMeter").style.width=Math.round((S.solved*20+S.stars*5)/140*100)+"%";}
+function toast(txt){const d=document.createElement("div");d.className="toast";d.textContent=txt;const box=$("toastBox");box.innerHTML="";box.appendChild(d);setTimeout(()=>{if(d.parentNode)d.remove();},1900);}
+function fullscreen(){const el=document.documentElement;try{const p=document.fullscreenElement?document.exitFullscreen():(el.requestFullscreen||el.webkitRequestFullscreen||(()=>{})).call(el);if(p&&p.catch)p.catch(()=>{});}catch(e){}}
+$("fs").onclick=fullscreen;$("fs2").onclick=fullscreen;
+$("snd").onclick=()=>{soundOn=!soundOn;$("snd").textContent="الصوت: "+(soundOn?"شغال":"مقفول");};
+$("go").onclick=()=>{
+ S.name=$("nm").value.trim()||"بطل الصداقة";
+ try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}
+ $("startL").hidden=true;$("hud").hidden=false;$("hint").hidden=false;S.mode="play";hud();toast("روح عند أول دايرة حمرا!");
+};
+$("again").onclick=()=>location.reload();
+
+/* ---------- mission dialog ---------- */
+let cur=null;
+function openMission(m){cur=m;S.paused=true;S.target=null;S.keys={};
+ $("dN").textContent=m.n;$("dQ").textContent=m.q;$("dF").innerHTML="";$("dGo").hidden=true;$("dX").hidden=false;
+ const opts=m.o.slice().sort(()=>rnd()-.5);
+ $("dO").innerHTML="";opts.forEach(o=>{const b=document.createElement("button");b.className="opt";b.textContent=o.t;$("dO").appendChild(b);
+  b.onclick=()=>{
+   if(o.g){[...$("dO").children].forEach(x=>x.disabled=true);b.classList.add("good");
+    const pts=m.tries===0?20:10;m.pts=pts;
+    $("dF").innerHTML=`<div class="fb good"><b>تصرف بطل! +${pts}</b><span></span></div>`;$("dF").querySelector("span").textContent=o.f;
+    $("dGo").hidden=false;$("dX").hidden=true;$("dGo").focus();sfx.star();
+   }else{m.tries++;b.disabled=true;b.classList.add("bad");
+    $("dF").innerHTML=`<div class="fb bad"><b>لأ، فكّر تاني</b><span></span></div>`;$("dF").querySelector("span").textContent=o.f;sfx.bad();}
+  };});
+ $("dlgL").hidden=false;setTimeout(()=>{const f=$("dO").querySelector(".opt");if(f)f.focus();},50);
+}
+$("dX").onclick=()=>{$("dlgL").hidden=true;S.paused=false;if(cur)cur.armed=false;cur=null;};
+$("dGo").onclick=()=>{$("dlgL").hidden=true;S.paused=false;solve(cur);cur=null;};
+
+function solve(m){m.solved=true;S.solved++;S.score+=m.pts;hud();sfx.good();
+ const v=m.victim;v.setMood("happy");v.jumpUntil=clock.elapsedTime+3;
+ m.bulliesK.forEach((b,i)=>{b.setMood("happy");b.shirt.color.set(FRIENDLY[(i+3)%6]);b.arms[1].rotation.x=0;
+  b.target=new T.Vector3(m.center.x+(i===0?-1.5:1.5),0,m.center.z);b.after=()=>{b.faceT=0;b.jumpUntil=clock.elapsedTime+2.5;};});
+ m.ring.material.color.set(0x3DD68C);
+ scene.remove(m.marker);const h=mesh(heartGeo,heartM,m.center.x,7,m.center.z);h.scale.setScalar(2.2);m.marker=h;scene.add(h);
+ burst(new T.Vector3(m.center.x,2.5,m.center.z),"heart",26);burst(new T.Vector3(m.center.x,2.5,m.center.z),"spark",30);
+ toast(S.solved<5?`الموقف اتصلّح! فاضل ${5-S.solved}`:"المدرسة كلها نوّرت!");
+ if(S.solved===5)setTimeout(finale,1800);
+}
+function finale(){S.mode="finale";sfx.win();confettiRain();$("hint").hidden=true;
+ kids.forEach(k=>{k.setMood("happy");k.jumpUntil=clock.elapsedTime+9;});
+ setTimeout(()=>{const pct=S.score/140;
+  $("cName").textContent=S.name;$("cScore").textContent=S.score;
+  $("cRank").textContent=pct>=.85?"سفير ذهبي ضد التنمر":pct>=.6?"سفير فضي ضد التنمر":"سفير ضد التنمر";
+  $("certL").hidden=false;$("again").focus();},3200);}
+
+/* ---------- input ---------- */
+const ray=new T.Raycaster(),ndc=new T.Vector2();
+function setTarget(e){if(S.mode!=="play"||S.paused)return;const r=canvas.getBoundingClientRect();
+ ndc.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(ndc,camera);
+ const hit=ray.intersectObject(ground)[0];if(hit){S.target=hit.point.clone();S.target.y=0;tapRing.position.set(hit.point.x,.07,hit.point.z);tapRing.material.opacity=.9;}}
+canvas.addEventListener("pointerdown",e=>{setTarget(e);canvas.setPointerCapture&&canvas.setPointerCapture(e.pointerId);});
+canvas.addEventListener("pointermove",e=>{if(e.buttons)setTarget(e);});
+const KEYS={ArrowUp:"u",KeyW:"u",ArrowDown:"d",KeyS:"d",ArrowLeft:"l",KeyA:"l",ArrowRight:"r",KeyD:"r"};
+addEventListener("keydown",e=>{const k=KEYS[e.code];if(k&&S.mode==="play"&&!S.paused){S.keys[k]=1;S.target=null;e.preventDefault();}});
+addEventListener("keyup",e=>{const k=KEYS[e.code];if(k)S.keys[k]=0;});
+
+/* ---------- loop ---------- */
+function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+addEventListener("resize",resize);resize();
+const clock=new T.Clock();const tmp=new T.Vector3(),camGoal=new T.Vector3();
+const angDiff=(a,b)=>{let d=b-a;while(d>Math.PI)d-=Math.PI*2;while(d<-Math.PI)d+=Math.PI*2;return d;};
+function animKid(k,dt,t,moving){
+ const sw=moving?Math.sin(t*11+k.phase)*.7:0;
+ k.legs[0].rotation.x=sw;k.legs[1].rotation.x=-sw;k.arms[0].rotation.x=-sw*.8;if(!k.phone||k.mood!=="angry")k.arms[1].rotation.x=sw*.8;
+ k.face+=angDiff(k.face,k.faceT)*Math.min(1,dt*10);k.g.rotation.y=k.face;
+ if(t<k.jumpUntil){k.g.position.y=Math.abs(Math.sin(t*8+k.phase))*.7;k.arms[0].rotation.z=-2.4;k.arms[1].rotation.z=2.4;}
+ else{k.g.position.y=moving?Math.abs(Math.sin(t*11+k.phase))*.08:Math.sin(t*2+k.phase)*.03;k.arms[0].rotation.z=0;k.arms[1].rotation.z=0;
+  if(k.mood==="angry"){k.arms[0].rotation.z=.5;}}
+}
+function tick(){
+ const dt=Math.min(clock.getDelta(),.05),t=clock.elapsedTime;
+ /* sky brightens with kindness */
+ const kind=(S.solved*20+S.stars*5)/140;
+ scene.background.copy(SKY0).lerp(SKY1,kind);scene.fog.color.copy(scene.background);
+ hemi.intensity=.55+kind*.35;sun.intensity=.75+kind*.45;
+ skyClouds.forEach((c,i)=>{c.position.x+=dt*(.6+i%3*.3);if(c.position.x>110)c.position.x=-110;});
+ flag.rotation.y=Math.sin(t*2)*.15;
+
+ /* player */
+ let moving=false;
+ if(S.mode==="play"&&!S.paused){
+  tmp.set((S.keys.r||0)-(S.keys.l||0),0,(S.keys.d||0)-(S.keys.u||0));
+  if(tmp.lengthSq()===0&&S.target){tmp.subVectors(S.target,player.g.position);tmp.y=0;if(tmp.length()<.3){S.target=null;tmp.set(0,0,0);}}
+  if(tmp.lengthSq()>0){tmp.normalize();player.faceT=Math.atan2(tmp.x,tmp.z);tmp.multiplyScalar(10*dt);
+   const p=player.g.position;p.x=Math.max(-60,Math.min(60,p.x+tmp.x));p.z=Math.max(-40,Math.min(55,p.z+tmp.z));moving=true;}
+  /* missions proximity */
+  MISSIONS.forEach(m=>{if(m.solved)return;const d=Math.hypot(player.g.position.x-m.center.x,player.g.position.z-m.center.z);
+   if(d<4.3&&m.armed&&!S.paused)openMission(m);if(d>6.5)m.armed=true;});
+  /* stars */
+  stars.forEach(s=>{if(s.got)return;if(Math.hypot(player.g.position.x-s.position.x,player.g.position.z-s.position.z)<1.9){
+   s.got=true;scene.remove(s);S.stars++;S.score+=5;hud();sfx.star();toast("«"+s.word+"» +5");burst(s.position.clone(),"spark",22);}});
+ }
+ animKid(player,dt,t,moving);
+ halo.position.set(player.g.position.x,.06,player.g.position.z);halo.material.opacity=.55+Math.sin(t*4)*.25;
+ tapRing.material.opacity=Math.max(0,tapRing.material.opacity-dt*1.2);
+ /* guide arrow to nearest unsolved mission */
+ let best=null,bd=1e9;MISSIONS.forEach(m=>{if(m.solved)return;const d=player.g.position.distanceTo(m.center);if(d<bd){bd=d;best=m;}});
+ arrow.visible=S.mode==="play"&&!!best&&bd>6;
+ if(best){const a=Math.atan2(best.center.x-player.g.position.x,best.center.z-player.g.position.z);
+  arrow.position.set(player.g.position.x+Math.sin(a)*2.3,.5,player.g.position.z+Math.cos(a)*2.3);arrow.rotation.set(0,a,0);arrow.rotateX(Math.PI/2);}
+
+ /* other kids */
+ kids.forEach(k=>{if(k===player)return;let mv=false;
+  if(k.wander&&!k.target&&rnd()<.01)k.target=new T.Vector3((rnd()-.5)*70,0,(rnd()-.3)*60);
+  if(k.target){tmp.subVectors(k.target,k.g.position);tmp.y=0;const d=tmp.length();
+   if(d<.15){k.target=null;if(k.after){k.after();k.after=null;}}else{tmp.normalize();k.faceT=Math.atan2(tmp.x,tmp.z);k.g.position.addScaledVector(tmp,Math.min(d,k.speed*dt));mv=true;}}
+  animKid(k,dt,t,mv);});
+ /* mission props */
+ MISSIONS.forEach(m=>{
+  m.marker.rotation.y+=dt*2;m.marker.position.y=7+Math.sin(t*3)*.3;
+  m.ring.material.opacity=m.solved?.5:.35+Math.abs(Math.sin(t*3))*.4;
+  if(m.solved){m.cloud.scale.multiplyScalar(Math.max(0,1-dt*3));if(m.cloud.scale.x<.02)m.cloud.visible=false;}
+  else{m.cloud.position.y=4.3+Math.sin(t*1.5)*.1;m.cloud.drops.forEach((d,i)=>{d.position.y-=dt*2.5;if(d.position.y<-2.2)d.position.y=-.4;});}
  });
-}
+ stars.forEach((s,i)=>{if(!s.got){s.rotation.y+=dt*2.2;s.position.y=1.8+Math.sin(t*2.5+i)*.3;}});
+ /* particles */
+ for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.v.y-=p.g*dt;p.m.position.addScaledVector(p.v,dt);p.m.rotation.y+=p.spin*dt;p.life-=dt;
+  p.m.scale.setScalar(Math.max(.01,Math.min(1,p.life)));if(p.life<=0){scene.remove(p.m);parts.splice(i,1);}}
+ confetti.forEach(c=>{c.m.position.y-=c.s*dt;c.m.rotation.x+=c.r*dt;c.m.rotation.y+=c.r*.7*dt;if(c.m.position.y<0)c.m.position.y=18+rnd()*10;});
 
-function l2(){steps();const sc=SCENES[S.i],opts=shuffle(sc.o);
- h(`<section class="card">
-  <div class="top"><span class="eyebrow">المرحلة ٢ · إنت البطل</span><span class="count">${S.i+1} / ${SCENES.length}</span></div>
-  <h2>تعمل إيه؟</h2>
-  <p class="situation">${sc.q}</p>
-  <div class="opts" id="opts">${opts.map((o,k)=>`<button class="opt" data-k="${k}">${o.t}</button>`).join("")}</div>
-  <div id="fb"></div>
- </section>`);
- const bs=[...document.querySelectorAll(".opt")];
- bs.forEach(b=>b.onclick=()=>{
-  const o=opts[+b.dataset.k];add(o.s);
-  bs.forEach((x,k)=>{x.disabled=true;if(opts[k].s===20)x.classList.add("good");});
-  if(o.s!==20)b.classList.add("bad");
-  document.getElementById("fb").innerHTML=`<div class="fb ${o.s===20?"good":"bad"}"><b>${o.s===20?"تصرف بطل! +٢٠":o.s?"فكر تاني +٥":"لأ، ده بيأذي"}</b><span>${o.f}</span></div>
-   <div class="row" style="margin-top:12px"><button class="btn sun" id="nx">${S.i<SCENES.length-1?"الموقف اللي بعده":"على المرحلة التالتة"}</button></div>`;
-  const nx=document.getElementById("nx");nx.focus();
-  nx.onclick=()=>{S.i++;if(S.i<SCENES.length)l2();else{S.level=3;S.found=0;l3();}};
- });
+ /* camera */
+ if(S.mode==="intro"){const a=t*.12;camera.position.set(Math.sin(a)*58,28,Math.cos(a)*58);camera.lookAt(0,2,-5);}
+ else if(S.mode==="finale"){const a=t*.35,p=player.g.position;camGoal.set(p.x+Math.sin(a)*16,9,p.z+Math.cos(a)*16);camera.position.lerp(camGoal,1-Math.exp(-dt*2));camera.lookAt(p.x,2,p.z);}
+ else{const p=player.g.position;const wide=camera.aspect<1?1.35:1;camGoal.set(p.x,15*wide,p.z+17*wide);camera.position.lerp(camGoal,1-Math.exp(-dt*4));camera.lookAt(p.x,1.5,p.z-2);}
+ renderer.render(scene,camera);requestAnimationFrame(tick);
 }
-
-function l3(){steps();const ws=shuffle(WORDS);
- h(`<section class="card">
-  <span class="eyebrow">المرحلة ٣ · املا قلب الفصل</span>
-  <h2>دوّر على الكلمات اللي بتبني</h2>
-  <p class="muted">في ٦ كلمات لطيفة مستخبية وسط كلمات بتجرح. دوس على اللطيفة بس عشان تملا عداد الطيبة.</p>
-  <div class="meter" role="progressbar" aria-label="عداد الطيبة" aria-valuemin="0" aria-valuemax="6" aria-valuenow="0" id="m"><i id="mi"></i></div>
-  <div class="bubbles">${ws.map((w,k)=>`<button class="bubble" data-k="${k}">${w.t}</button>`).join("")}</div>
-  <p id="msg" class="muted" aria-live="polite">دوس على أي كلمة.</p>
- </section>`);
- document.querySelectorAll(".bubble").forEach(b=>b.onclick=()=>{
-  const w=ws[+b.dataset.k],msg=document.getElementById("msg");
-  if(w.k){if(b.classList.contains("good"))return;b.classList.add("good");b.disabled=true;S.found++;add(5);
-   document.getElementById("mi").style.width=(S.found/6*100)+"%";document.getElementById("m").setAttribute("aria-valuenow",S.found);
-   msg.textContent=`كلمة حلوة! «${w.t}» بتخلي اللي قدامك يحس إنه مهم. (${S.found} من ٦)`;
-   if(S.found===6){msg.innerHTML=`قلب الفصل اتملا! <button class="btn sun" id="nx" style="margin-top:10px;display:block">على المرحلة الأخيرة</button>`;
-    const nx=document.getElementById("nx");nx.focus();nx.onclick=()=>{S.level=4;l4();};}
-  }else{b.classList.remove("bad");void b.offsetWidth;b.classList.add("bad");
-   msg.textContent=`آي! «${w.t}» كلمة بتجرح. الكلمة ممكن تفضل في قلب الإنسان سنين.`;}
- });
-}
-
-function l4(){steps();
- h(`<section class="card">
-  <span class="eyebrow">المرحلة ٤ · وعد البطل</span>
-  <h2>لو اتنمر عليك، افتكر الـ٣ خطوات</h2>
-  <div class="plan"><div>قول «لأ، وقف» بصوت هادي وواثق.</div><div>ابعد عن المكان وروح عند ناس.</div><div>احكي لكبير بتثق فيه: أهلك أو المعلمة أو الأخصائي.</div></div>
-  <h3>اختار الوعود اللي هتلتزم بيها</h3>
-  <div class="opts">${PLEDGES.map((p,k)=>`<label class="check"><input type="checkbox" id="p${k}" checked><span>${p}</span></label>`).join("")}</div>
-  <label for="nm"><h3>اكتب اسمك عشان شهادتك</h3></label>
-  <input type="text" id="nm" maxlength="30" placeholder="مثلًا: ملك أحمد">
-  <button class="btn sun" id="cert">اعرض شهادتي</button>
- </section>`);
- document.getElementById("cert").onclick=()=>{
-  S.name=document.getElementById("nm").value.trim()||"بطل الصداقة";
-  S.picked=PLEDGES.filter((p,k)=>document.getElementById("p"+k).checked);cert();};
-}
-
-function cert(){S.level=5;steps();
- const pct=S.score/MAX,rank=pct>=.85?"سفير ذهبي ضد التنمر":pct>=.6?"سفير فضي ضد التنمر":"سفير تحت التدريب";
- h(`<section class="card cert">
-  <svg width="80" height="90" viewBox="0 0 34 38" aria-hidden="true"><path d="M17 2 31 7v10c0 9-6 15-14 19C9 32 3 26 3 17V7z" fill="var(--brand)"/><path d="M17 27c-5-3-8-6-8-9a4 4 0 0 1 8-1 4 4 0 0 1 8 1c0 3-3 6-8 9z" fill="var(--sun)"/></svg>
-  <span class="eyebrow">شهادة درع الصداقة</span>
-  <p>نشهد إن</p>
-  <div class="name">${esc(S.name)}</div>
-  <span class="rank">${rank}</span>
-  <p>خلّص كل المراحل وجمع <b>${S.score}</b> من <b>${MAX}</b> نقطة شجاعة.</p>
-  ${S.picked.length?`<div style="text-align:start"><h3>وعد إنه:</h3><ul class="pledges">${S.picked.map(p=>`<li>${p}</li>`).join("")}</ul></div>`:""}
-  <p class="muted">خد صورة للشاشة دي وورّيها لمعلمتك وأصحابك.</p>
-  <div class="row" style="width:100%"><button class="btn" id="again">العب تاني</button></div>
- </section>`);
- document.getElementById("again").onclick=home;
-}
-
-home();
+tick();
 })();
 </script>
 </body>
