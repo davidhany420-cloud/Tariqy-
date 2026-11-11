@@ -91,6 +91,18 @@ p{margin:0}
 .cert .name{font-family:var(--display);font-size:clamp(2.2rem,8vw,3.6rem);font-weight:800;color:var(--brand);line-height:1.15}
 .rank{background:var(--sun);color:var(--on-sun);border-radius:999px;padding:4px 20px;font-weight:800;font-family:var(--display);font-size:1.3rem}
 .promise{background:var(--brand-soft);border-radius:16px;padding:12px 16px;font-weight:700}
+/* on-screen controls for the smart board */
+body{font-size:clamp(18px,1.25vw,26px)}
+.iconbtn{padding:10px 18px;min-height:48px}
+.pad{position:fixed;z-index:6;left:max(18px,env(safe-area-inset-left,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));
+  display:grid;grid-template-columns:repeat(3,var(--k));grid-template-rows:repeat(3,var(--k));gap:8px;--k:clamp(64px,7vw,110px);direction:ltr}
+.pad button{font:inherit;font-size:calc(var(--k)*.42);font-weight:800;border:0;border-radius:22px;background:var(--panel);color:var(--brand);
+  box-shadow:0 6px 0 rgba(0,0,0,.18),0 10px 24px rgba(0,0,0,.2);cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none;display:flex;align-items:center;justify-content:center}
+.pad button.on{background:var(--sun);color:var(--on-sun);transform:translateY(4px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+.pad button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
+.pad .u{grid-area:1/2}.pad .l{grid-area:2/1}.pad .r{grid-area:2/3}.pad .d{grid-area:3/2}
+.pad svg{width:55%;height:55%;fill:currentColor}
+@media (max-width:760px){.hint{display:none}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -108,9 +120,16 @@ p{margin:0}
     <span class="meterbox">نور المدرسة <span class="meter"><i id="hMeter"></i></span></span>
     <button class="iconbtn" id="snd">الصوت: شغال</button>
     <button class="iconbtn" id="fs">شاشة كاملة</button>
+    <button class="iconbtn" id="restart">ابدأ من الأول</button>
   </div>
 </div>
-<div class="hint" id="hint" hidden><span>دوس على الأرض عشان تمشي، أو استخدم الأسهم. روح عند الدواير الحمرا وصلّح الموقف.</span></div>
+<div class="pad" id="pad" hidden aria-label="أزرار الحركة">
+  <button class="u" data-k="u" aria-label="لقدام"><svg viewBox="0 0 10 10"><path d="M5 1 9.5 8h-9z"/></svg></button>
+  <button class="l" data-k="l" aria-label="شمال"><svg viewBox="0 0 10 10"><path d="M1 5 8 .5v9z"/></svg></button>
+  <button class="r" data-k="r" aria-label="يمين"><svg viewBox="0 0 10 10"><path d="M9 5 2 .5v9z"/></svg></button>
+  <button class="d" data-k="d" aria-label="لورا"><svg viewBox="0 0 10 10"><path d="M5 9 9.5 2h-9z"/></svg></button>
+</div>
+<div class="hint" id="hint" hidden><span>امشي بالأزرار، أو المس الأرض، أو استخدم الأسهم. روح عند الدواير الحمرا وصلّح الموقف.</span></div>
 <div id="toastBox"></div>
 
 <div class="layer" id="startL">
@@ -355,13 +374,20 @@ $("snd").onclick=()=>{soundOn=!soundOn;$("snd").textContent="الصوت: "+(soun
 $("go").onclick=()=>{
  S.name=$("nm").value.trim()||"بطل الصداقة";
  try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}
- $("startL").hidden=true;$("hud").hidden=false;$("hint").hidden=false;S.mode="play";hud();toast("روح عند أول دايرة حمرا!");
+ $("startL").hidden=true;$("hud").hidden=false;$("hint").hidden=false;$("pad").hidden=false;S.mode="play";hud();toast("روح عند أول دايرة حمرا!");
 };
 $("again").onclick=()=>location.reload();
+$("restart").onclick=()=>location.reload();
+/* on-screen D-pad: hold a button to keep walking */
+document.querySelectorAll("#pad button").forEach(b=>{const k=b.dataset.k;
+ const on=e=>{e.preventDefault();if(S.mode!=="play"||S.paused)return;S.keys[k]=1;S.target=null;b.classList.add("on");try{b.setPointerCapture(e.pointerId);}catch(_){}};
+ const off=()=>{S.keys[k]=0;b.classList.remove("on");};
+ b.addEventListener("pointerdown",on);["pointerup","pointercancel","lostpointercapture"].forEach(ev=>b.addEventListener(ev,off));
+ b.addEventListener("contextmenu",e=>e.preventDefault());});
 
 /* ---------- mission dialog ---------- */
 let cur=null;
-function openMission(m){cur=m;S.paused=true;S.target=null;S.keys={};
+function openMission(m){cur=m;S.paused=true;S.target=null;S.keys={};document.querySelectorAll("#pad button").forEach(b=>b.classList.remove("on"));
  $("dN").textContent=m.n;$("dQ").textContent=m.q;$("dF").innerHTML="";$("dGo").hidden=true;$("dX").hidden=false;
  const opts=m.o.slice().sort(()=>rnd()-.5);
  $("dO").innerHTML="";opts.forEach(o=>{const b=document.createElement("button");b.className="opt";b.textContent=o.t;$("dO").appendChild(b);
@@ -388,7 +414,7 @@ function solve(m){m.solved=true;S.solved++;S.score+=m.pts;hud();sfx.good();
  toast(S.solved<5?`الموقف اتصلّح! فاضل ${5-S.solved}`:"المدرسة كلها نوّرت!");
  if(S.solved===5)setTimeout(finale,1800);
 }
-function finale(){S.mode="finale";sfx.win();confettiRain();$("hint").hidden=true;
+function finale(){S.mode="finale";sfx.win();confettiRain();$("hint").hidden=true;$("pad").hidden=true;
  kids.forEach(k=>{k.setMood("happy");k.jumpUntil=clock.elapsedTime+9;});
  setTimeout(()=>{const pct=S.score/140;
   $("cName").textContent=S.name;$("cScore").textContent=S.score;
