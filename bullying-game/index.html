@@ -170,7 +170,6 @@ p{margin:0}
     <div class="row" role="group" aria-label="اختر شخصيتك">
       <button class="choice" data-g="boy" aria-pressed="true">ولد</button>
       <button class="choice" data-g="girl" aria-pressed="false">بنت</button>
-      <button class="choice" data-g="hijab" aria-pressed="false">بنت بحجاب</button>
     </div>
     <label for="nm" class="muted">اكتب اسمك ليظهر فوق شخصيتك وعلى شهادتك</label>
     <input type="text" id="nm" maxlength="24" placeholder="اكتب اسمك هنا">
@@ -529,10 +528,9 @@ const starGeo=new T.ExtrudeGeometry(ss,{depth:.3,bevelEnabled:true,bevelSize:.08
 const heartM=M(0xFF5C7A,{emissive:0xFF2F55,emissiveIntensity:.35});
 const starM=M(0xFFC233,{emissive:0xFFAA00,emissiveIntensity:.55,metalness:.3,roughness:.4});
 
-/* ================= kids (boys, girls, girls with hijab) ================= */
+/* ================= kids (boys and girls) ================= */
 let kids=[];
 const SKINS=[0xF1C9A5,0xD9A27A,0xB57A55,0x8D5A3B],HAIRS=[0x2B1B12,0x4A2E1D,0x111111,0x6B4423];
-const HIJABS=[0xF2EEE4,0x2F4858,0xC77D9B,0x6C8EBF,0x8E6BB0,0xE0B07A];
 function makeKid(o){
  const g=new T.Group();scene.add(g);
  const skin=M(o.skin),shirt=M(o.shirt),pants=M(o.pants||0x2F4858),hair=M(o.hair||0x2B1B12);
@@ -543,14 +541,8 @@ function makeKid(o){
  if(o.girl)mesh(new T.CylinderGeometry(.5,.78,.8,12),M(o.skirt||0x2F4858),0,.72,0,g);
  const head=new T.Group();head.position.set(0,2.32,0);g.add(head);
  mesh(new T.SphereGeometry(.52,14,12),skin,0,0,0,head);
- if(o.hijab){const hm=M(o.hijab);
-  mesh(new T.SphereGeometry(.6,16,12,0,Math.PI*2,0,Math.PI/2.4),hm,0,.05,-.03,head);
-  mesh(new T.SphereGeometry(.62,16,12,Math.PI,Math.PI,0,Math.PI*.85),hm,0,0,0,head);
-  mesh(new T.CylinderGeometry(.5,.66,.55,14),hm,0,-.55,0,head);
- }else{
-  mesh(new T.SphereGeometry(.55,14,8,0,Math.PI*2,0,Math.PI/2.3),hair,0,.04,-.02,head);
-  if(o.girl){mesh(new T.BoxGeometry(1,1.15,.35),hair,0,-.35,-.33,head);mesh(new T.BoxGeometry(.2,.8,.3),hair,-.5,-.2,-.05,head);mesh(new T.BoxGeometry(.2,.8,.3),hair,.5,-.2,-.05,head);}
- }
+ mesh(new T.SphereGeometry(.55,14,8,0,Math.PI*2,0,Math.PI/2.3),hair,0,.04,-.02,head);
+ if(o.girl){mesh(new T.BoxGeometry(1,1.15,.35),hair,0,-.35,-.33,head);mesh(new T.BoxGeometry(.2,.8,.3),hair,-.5,-.2,-.05,head);mesh(new T.BoxGeometry(.2,.8,.3),hair,.5,-.2,-.05,head);}
  const eyeM=M(0x111111);mesh(new T.SphereGeometry(.075,8,6),eyeM,-.18,.06,.46,head);mesh(new T.SphereGeometry(.075,8,6),eyeM,.18,.06,.46,head);
  const mouth=mesh(new T.TorusGeometry(.13,.035,6,12,Math.PI),M(0x7A2230),0,-.18,.47,head);
  const brows=new T.Group();head.add(brows);
@@ -565,7 +557,7 @@ function makeKid(o){
 const pick=a=>a[Math.floor(rnd()*a.length)];
 const FRIENDLY=[0x4FA3E3,0x58C27D,0xF08BB4,0xB487E8,0x3FC1B5,0xF3A04B];
 function kidLook(girl,extra){const o=Object.assign({skin:pick(SKINS),hair:pick(HAIRS)},extra||{});
- if(girl){o.girl=1;o.skirt=pick([0x2F4858,0x5B3A6E,0x1F5C8C,0x3B3B3B]);if(rnd()<.55)o.hijab=pick(HIJABS);}return o;}
+ if(girl){o.girl=1;o.skirt=pick([0x2F4858,0x5B3A6E,0x1F5C8C,0x3B3B3B]);}return o;}
 
 /* player, with a floating name tag */
 let player=null;
@@ -578,7 +570,6 @@ function makePlayer(kind,name){
  if(player){scene.remove(player.g);kids=kids.filter(k=>k!==player);}
  const o={skin:0xE7B58C,hair:0x2B1B12,shirt:0xFFC233,pants:0x1F5C8C,scale:1.12};
  if(kind!=="boy"){o.girl=1;o.skirt=0x1F5C8C;o.hair=0x3A2216;}
- if(kind==="hijab")o.hijab=0xF2EEE4;
  player=makeKid(o);player.g.position.copy(pos);
  const cape=mesh(new T.PlaneGeometry(1.1,1.5),M(0x0F7A71,{side:T.DoubleSide}),0,1.45,-.62,player.g);cape.rotation.x=.18;
  if(name){const sp=new T.Sprite(new T.SpriteMaterial({map:nameTex(name),depthTest:false,transparent:true}));sp.scale.set(3.4,.85,1);sp.position.set(0,3.55,0);sp.renderOrder=10;player.g.add(sp);
