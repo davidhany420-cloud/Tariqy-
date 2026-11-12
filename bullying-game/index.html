@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>درع الصداقة</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@600;800&family=Tajawal:wght@400;500;700;800&display=swap">
 <style>
 /* Layout: full-screen 3D school yard; HTML overlays (HUD, dialog, start, certificate) float above the canvas */
@@ -112,41 +111,41 @@ body{font-size:clamp(18px,1.25vw,26px)}
 
 <div class="hud" id="hud" hidden>
   <div class="grp">
-    <span class="pill sun">نقاط: <span id="hScore">0</span></span>
-    <span class="pill">مواقف: <span id="hMis">0</span> / 5</span>
-    <span class="pill">نجوم: <span id="hStar">0</span> / 8</span>
+    <span class="pill sun">النقاط: <span id="hScore">0</span></span>
+    <span class="pill">المواقف: <span id="hMis">0</span> / 5</span>
+    <span class="pill">النجوم: <span id="hStar">0</span> / 8</span>
   </div>
   <div class="grp">
     <span class="meterbox">نور المدرسة <span class="meter"><i id="hMeter"></i></span></span>
-    <button class="iconbtn" id="snd">الصوت: شغال</button>
-    <button class="iconbtn" id="fs">شاشة كاملة</button>
-    <button class="iconbtn" id="restart">ابدأ من الأول</button>
+    <button class="iconbtn" id="snd">الصوت: يعمل</button>
+    <button class="iconbtn" id="fs">ملء الشاشة</button>
+    <button class="iconbtn" id="restart">ابدأ من جديد</button>
   </div>
 </div>
 <div class="pad" id="pad" hidden aria-label="أزرار الحركة">
-  <button class="u" data-k="u" aria-label="لقدام"><svg viewBox="0 0 10 10"><path d="M5 1 9.5 8h-9z"/></svg></button>
-  <button class="l" data-k="l" aria-label="شمال"><svg viewBox="0 0 10 10"><path d="M1 5 8 .5v9z"/></svg></button>
-  <button class="r" data-k="r" aria-label="يمين"><svg viewBox="0 0 10 10"><path d="M9 5 2 .5v9z"/></svg></button>
-  <button class="d" data-k="d" aria-label="لورا"><svg viewBox="0 0 10 10"><path d="M5 9 9.5 2h-9z"/></svg></button>
+  <button class="u" data-k="u" aria-label="إلى الأمام"><svg viewBox="0 0 10 10"><path d="M5 1 9.5 8h-9z"/></svg></button>
+  <button class="l" data-k="l" aria-label="إلى اليسار"><svg viewBox="0 0 10 10"><path d="M1 5 8 .5v9z"/></svg></button>
+  <button class="r" data-k="r" aria-label="إلى اليمين"><svg viewBox="0 0 10 10"><path d="M9 5 2 .5v9z"/></svg></button>
+  <button class="d" data-k="d" aria-label="إلى الخلف"><svg viewBox="0 0 10 10"><path d="M5 9 9.5 2h-9z"/></svg></button>
 </div>
-<div class="hint" id="hint" hidden><span>امشي بالأزرار، أو المس الأرض، أو استخدم الأسهم. روح عند الدواير الحمرا وصلّح الموقف.</span></div>
+<div class="hint" id="hint" hidden><span>تحرّك بالأزرار، أو المس الأرض، أو استخدم الأسهم. اذهب إلى الدوائر الحمراء وأصلح الموقف.</span></div>
 <div id="toastBox"></div>
 
 <div class="layer" id="startL">
   <div class="panel start">
     <div class="title">لا للتنمر</div>
     <div class="sub">درع الصداقة</div>
-    <p class="muted">المدرسة ضلمة وحزينة عشان فيها تنمر. لف في الساحة، صلّح ٥ مواقف تنمر، ولمّ نجوم الكلام الحلو، والمدرسة هتنوّر.</p>
+    <p class="muted">المدرسة مظلمة وحزينة لأن فيها تنمرًا. تجوّل في الساحة، وأصلح خمسة مواقف تنمر، واجمع نجوم الكلام الطيب، فتشرق المدرسة من جديد.</p>
     <div class="signs">
-      <div class="sign"><b>مقصود</b>عارف إنه بيضايقه</div>
-      <div class="sign"><b>بيتكرر</b>مش مرة وخلاص</div>
-      <div class="sign"><b>استقواء</b>أقوى على أضعف</div>
+      <div class="sign"><b>مقصود</b>يعلم أنه يؤذي غيره</div>
+      <div class="sign"><b>متكرر</b>لا يحدث مرة واحدة فقط</div>
+      <div class="sign"><b>استقواء</b>قويٌّ يعتدي على ضعيف</div>
     </div>
-    <label for="nm" class="muted">اكتب اسمك عشان يتكتب على شهادتك</label>
-    <input type="text" id="nm" maxlength="30" placeholder="اسمك هنا">
+    <label for="nm" class="muted">اكتب اسمك ليُكتب على شهادتك</label>
+    <input type="text" id="nm" maxlength="30" placeholder="اكتب اسمك هنا">
     <div class="row">
       <button class="btn sun" id="go">ابدأ اللعبة</button>
-      <button class="btn ghost" id="fs2">شاشة كاملة</button>
+      <button class="btn ghost" id="fs2">ملء الشاشة</button>
     </div>
   </div>
 </div>
@@ -154,13 +153,13 @@ body{font-size:clamp(18px,1.25vw,26px)}
 <div class="layer dim" id="dlgL" hidden>
   <div class="panel" role="dialog" aria-modal="true" aria-labelledby="dT">
     <span class="eyebrow" id="dN"></span>
-    <h2 id="dT">تعمل إيه؟</h2>
+    <h2 id="dT">ماذا تفعل؟</h2>
     <p class="situation" id="dQ"></p>
     <div class="opts" id="dO"></div>
     <div id="dF"></div>
     <div class="row" style="justify-content:flex-start">
-      <button class="btn sun" id="dGo" hidden>يلا نصلّح الموقف</button>
-      <button class="btn ghost" id="dX">مش دلوقتي</button>
+      <button class="btn sun" id="dGo" hidden>هيا نُصلح الموقف</button>
+      <button class="btn ghost" id="dX">ليس الآن</button>
     </div>
   </div>
 </div>
@@ -168,14 +167,14 @@ body{font-size:clamp(18px,1.25vw,26px)}
 <div class="layer dim" id="certL" hidden>
   <div class="panel cert">
     <span class="eyebrow">شهادة مدرسة بلا تنمر</span>
-    <h1 style="font-size:clamp(1.6rem,5vw,2.4rem)">المدرسة نوّرت بيك</h1>
-    <p>نشهد إن</p>
+    <h1 style="font-size:clamp(1.6rem,5vw,2.4rem)">أشرقت المدرسة بفضلك</h1>
+    <p>نشهد بأن</p>
     <div class="name" id="cName"></div>
     <span class="rank" id="cRank"></span>
-    <p>صلّح ٥ مواقف تنمر وجمع <b id="cScore"></b> من <b>140</b> نقطة.</p>
-    <p class="promise">وعدي: مش هتنمر على حد تاني، وهقف جنب أي حد بيتنمر عليه، وهحكي لكبير بثق فيه لو شفت تنمر.</p>
-    <p class="muted">صوّروا الشاشة دي وعلّقوها في الفصل.</p>
-    <div class="row"><button class="btn" id="again">العب تاني</button></div>
+    <p>أصلح خمسة مواقف تنمر، وجمع <b id="cScore"></b> نقطة من <b>140</b>.</p>
+    <p class="promise">وعدي: لن أتنمر على أحد، وسأقف بجانب كل من يتعرض للتنمر، وسأخبر شخصًا كبيرًا أثق به إذا رأيت تنمرًا.</p>
+    <p class="muted">التقطوا صورة لهذه الشاشة وعلّقوها في الفصل.</p>
+    <div class="row"><button class="btn" id="again">العب مرة أخرى</button></div>
   </div>
 </div>
 
@@ -186,28 +185,28 @@ const T=THREE,$=id=>document.getElementById(id);
 
 /* ---------- data ---------- */
 const MISSIONS=[
- {at:[-22,-8],bullies:2,n:"موقف ١ · النضارة",q:"ولاد بيتريقوا على زميلكم عشان لابس نضارة كبيرة، وهو خلاص هيعيط.",o:[
-  {t:"أقف جنبه وأقول بهدوء «كفاية، ده مش هزار»، وآخده نلعب سوا.",g:1,f:"برافو! لما حد يقف جنب المظلوم، المتنمر غالبًا بيوقف."},
-  {t:"أضحك معاهم عشان مبقاش غريب.",g:0,f:"الضحك بيدي المتنمر إحساس إن الناس معاه، فبيكمل."},
-  {t:"أمشي وأعمل نفسي مش شايف.",g:0,f:"السكوت بيخلي زميلك يحس إنه لوحده خالص. جرّب تاني."}]},
- {at:[24,-12],bullies:0,n:"موقف ٢ · الطالب الجديد",q:"في طالب جديد بيقعد لوحده في الفسحة كل يوم، ومحدش بيكلمه.",o:[
-  {t:"أتريق على لهجته عشان مختلفة.",g:0,f:"الاختلاف مش عيب. التريقة على حد عشان مختلف تنمر."},
-  {t:"أروح أعرّفه بنفسي وأعزمه يلعب معانا.",g:1,f:"تصرف بطل! كلمة لطيفة واحدة ممكن تغيّر يومه كله."},
-  {t:"أسيبه، هو أكيد بيحب يقعد لوحده.",g:0,f:"ممكن يكون مكسوف بس ومستني حد يكلمه. جرّب تاني."}]},
- {at:[-24,20],bullies:1,big:1,n:"موقف ٣ · المصروف",q:"ولد أكبر بياخد مصروف زميلك كل يوم ويقوله «لو قلت لحد هتشوف».",o:[
-  {t:"أقول لزميلي يديله الفلوس ويسكت.",g:0,f:"السكوت مش هيوقفه، وهيفضل يعمل كده كل يوم."},
-  {t:"أضرب الولد الكبير.",g:0,f:"ممكن حد يتأذي، وممكن إنت كمان تتعاقب. فيه حل أأمن."},
-  {t:"أروح أنا وزميلي نحكي للأخصائي الاجتماعي أو للمعلمة.",g:1,f:"صح جدًا. إنك تحكي لكبير مش «فتنة»، ده حماية."}]},
- {at:[24,20],bullies:2,phone:1,n:"موقف ٤ · جروب الفصل",q:"أصحابك بيتريقوا على صورة زميلتكم على جروب الواتساب، وعايزينك تبعت إيموجي ضحك.",o:[
-  {t:"أبعت إيموجي صغير، مش مشكلة.",g:0,f:"حتى الإيموجي بيشارك في الأذى، والزميلة هتشوفه."},
-  {t:"أرفض وأكتب «بلاش كده يا جماعة»، وأبلّغ كبير لو كمّلوا.",g:1,f:"ده اللي اسمه شجاعة. التنمر على النت تنمر حقيقي."},
-  {t:"أخرج من الجروب ومعلّقش.",g:0,f:"كويس إنك ماشاركتش، بس الزميلة لسه محتاجة حد يقف معاها."}]},
- {at:[0,-28],bullies:2,n:"موقف ٥ · التهتهة",q:"ولاد بيقلّدوا طريقة كلام زميلهم اللي بيتهته عشان يضحّكوا الفصل عليه.",o:[
-  {t:"أقول لهم «التريقة دي بتجرح»، وأقول لزميلي «كمّل براحتك، إحنا سامعينك».",g:1,f:"رائع! إنت دافعت عنه وخليته يحس إنه مقبول زي ما هو."},
-  {t:"أقلّده أنا كمان، هو هزار.",g:0,f:"الهزار هزار لما الكل يضحك. لو حد بيتجرح يبقى تنمر."},
-  {t:"أستنى المعلمة هي اللي تتصرف.",g:0,f:"ممكن المعلمة متكونش شايفة. تقدر تتصرف دلوقتي وتقولها كمان."}]}
+ {at:[-22,-8],bullies:2,n:"الموقف ١ · النظارة",q:"يسخر بعض الطلاب من زميلكم لأنه يلبس نظارة كبيرة، وقد أوشك على البكاء.",o:[
+  {t:"أقف بجانبه وأقول بهدوء: «كفى، هذا ليس مزاحًا»، ثم أصطحبه لنلعب معًا.",g:1,f:"أحسنت! حين يقف أحدٌ بجانب المظلوم، يتوقف المتنمر غالبًا."},
+  {t:"أضحك معهم حتى لا أبدو مختلفًا.",g:0,f:"الضحك يُشعر المتنمر بأن الناس معه، فيستمر في أذاه."},
+  {t:"أمضي وأتظاهر بأنني لم أرَ شيئًا.",g:0,f:"السكوت يجعل زميلك يشعر بأنه وحيد تمامًا. حاول مرة أخرى."}]},
+ {at:[24,-12],bullies:0,n:"الموقف ٢ · الطالب الجديد",q:"طالب جديد يجلس وحده في الاستراحة كل يوم، ولا يكلّمه أحد.",o:[
+  {t:"أسخر من لهجته لأنها مختلفة.",g:0,f:"الاختلاف ليس عيبًا، والسخرية من شخص لأنه مختلف تنمّر."},
+  {t:"أذهب إليه، وأعرّفه بنفسي، وأدعوه ليلعب معنا.",g:1,f:"تصرّف بطولي! كلمة لطيفة واحدة قد تغيّر يومه كله."},
+  {t:"أتركه، فلعله يحب الجلوس وحده.",g:0,f:"ربما يكون خجولًا وينتظر من يكلّمه. حاول مرة أخرى."}]},
+ {at:[-24,20],bullies:1,big:1,n:"الموقف ٣ · المصروف",q:"طالب أكبر سنًّا يأخذ مصروف زميلك كل يوم، ويهدده قائلًا: «إن أخبرت أحدًا فسترى».",o:[
+  {t:"أنصح زميلي بأن يعطيه المال ويسكت.",g:0,f:"السكوت لن يوقفه، وسيستمر في ذلك كل يوم."},
+  {t:"أضرب الطالب الأكبر.",g:0,f:"قد يتأذى أحد، وقد تُعاقَب أنت أيضًا. هناك حل أكثر أمانًا."},
+  {t:"أذهب أنا وزميلي لنخبر الأخصائي الاجتماعي أو المعلمة.",g:1,f:"تصرّف صحيح تمامًا. إخبار شخص كبير ليس وشاية، بل هو حماية."}]},
+ {at:[24,20],bullies:2,phone:1,n:"الموقف ٤ · مجموعة الفصل",q:"يسخر أصدقاؤك من صورة زميلتكم في مجموعة الفصل على الهاتف، ويطلبون منك أن ترسل رمزًا ضاحكًا.",o:[
+  {t:"أرسل رمزًا صغيرًا، فلا ضرر في ذلك.",g:0,f:"حتى الرمز الصغير مشاركة في الأذى، وستراه زميلتك."},
+  {t:"أرفض وأكتب: «توقفوا عن هذا من فضلكم»، وأخبر شخصًا كبيرًا إن استمروا.",g:1,f:"هذه هي الشجاعة. التنمر عبر الإنترنت تنمر حقيقي."},
+  {t:"أغادر المجموعة دون تعليق.",g:0,f:"أحسنت لأنك لم تشارك، لكن زميلتك ما زالت تحتاج إلى من يقف معها."}]},
+ {at:[0,-28],bullies:2,n:"الموقف ٥ · التأتأة",q:"يقلّد بعض الطلاب طريقة كلام زميلهم الذي يتأتئ؛ ليُضحكوا الفصل عليه.",o:[
+  {t:"أقول لهم: «هذه السخرية تجرح»، وأقول لزميلي: «أكمل على مهلك، نحن نسمعك».",g:1,f:"رائع! دافعت عنه وجعلته يشعر بأنه مقبول كما هو."},
+  {t:"أقلّده أنا أيضًا، فالأمر مجرد مزاح.",g:0,f:"المزاح يكون مزاحًا حين يضحك الجميع، فإن تألّم أحدٌ صار تنمرًا."},
+  {t:"أنتظر حتى تتصرف المعلمة.",g:0,f:"ربما لم ترَ المعلمة ما حدث. تستطيع أن تتصرف الآن، ثم تخبرها أيضًا."}]}
 ];
-const WORDS=["إنت مهم","تعالَ العب معانا","أنا جنبك","فكرتك حلوة","شكرًا ليك","أنا آسف","إنت كويس؟","برافو عليك"];
+const WORDS=["أنت مهم","تعالَ العب معنا","أنا بجانبك","فكرتك رائعة","شكرًا لك","أنا آسف","هل أنت بخير؟","أحسنت"];
 const STARS_AT=[[-8,2],[10,-2],[-34,4],[36,4],[-12,34],[12,34],[-36,-24],[38,-26]];
 
 /* ---------- renderer & scene ---------- */
@@ -370,11 +369,11 @@ function hud(){$("hScore").textContent=S.score;$("hMis").textContent=S.solved;$(
 function toast(txt){const d=document.createElement("div");d.className="toast";d.textContent=txt;const box=$("toastBox");box.innerHTML="";box.appendChild(d);setTimeout(()=>{if(d.parentNode)d.remove();},1900);}
 function fullscreen(){const el=document.documentElement;try{const p=document.fullscreenElement?document.exitFullscreen():(el.requestFullscreen||el.webkitRequestFullscreen||(()=>{})).call(el);if(p&&p.catch)p.catch(()=>{});}catch(e){}}
 $("fs").onclick=fullscreen;$("fs2").onclick=fullscreen;
-$("snd").onclick=()=>{soundOn=!soundOn;$("snd").textContent="الصوت: "+(soundOn?"شغال":"مقفول");};
+$("snd").onclick=()=>{soundOn=!soundOn;$("snd").textContent="الصوت: "+(soundOn?"يعمل":"متوقف");};
 $("go").onclick=()=>{
  S.name=$("nm").value.trim()||"بطل الصداقة";
  try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}
- $("startL").hidden=true;$("hud").hidden=false;$("hint").hidden=false;$("pad").hidden=false;S.mode="play";hud();toast("روح عند أول دايرة حمرا!");
+ $("startL").hidden=true;$("hud").hidden=false;$("hint").hidden=false;$("pad").hidden=false;S.mode="play";hud();toast("اذهب إلى أول دائرة حمراء!");
 };
 $("again").onclick=()=>location.reload();
 $("restart").onclick=()=>location.reload();
@@ -394,10 +393,10 @@ function openMission(m){cur=m;S.paused=true;S.target=null;S.keys={};document.que
   b.onclick=()=>{
    if(o.g){[...$("dO").children].forEach(x=>x.disabled=true);b.classList.add("good");
     const pts=m.tries===0?20:10;m.pts=pts;
-    $("dF").innerHTML=`<div class="fb good"><b>تصرف بطل! +${pts}</b><span></span></div>`;$("dF").querySelector("span").textContent=o.f;
+    $("dF").innerHTML=`<div class="fb good"><b>تصرّف بطولي! +${pts}</b><span></span></div>`;$("dF").querySelector("span").textContent=o.f;
     $("dGo").hidden=false;$("dX").hidden=true;$("dGo").focus();sfx.star();
    }else{m.tries++;b.disabled=true;b.classList.add("bad");
-    $("dF").innerHTML=`<div class="fb bad"><b>لأ، فكّر تاني</b><span></span></div>`;$("dF").querySelector("span").textContent=o.f;sfx.bad();}
+    $("dF").innerHTML=`<div class="fb bad"><b>لا، فكّر مرة أخرى</b><span></span></div>`;$("dF").querySelector("span").textContent=o.f;sfx.bad();}
   };});
  $("dlgL").hidden=false;setTimeout(()=>{const f=$("dO").querySelector(".opt");if(f)f.focus();},50);
 }
@@ -411,7 +410,7 @@ function solve(m){m.solved=true;S.solved++;S.score+=m.pts;hud();sfx.good();
  m.ring.material.color.set(0x3DD68C);
  scene.remove(m.marker);const h=mesh(heartGeo,heartM,m.center.x,7,m.center.z);h.scale.setScalar(2.2);m.marker=h;scene.add(h);
  burst(new T.Vector3(m.center.x,2.5,m.center.z),"heart",26);burst(new T.Vector3(m.center.x,2.5,m.center.z),"spark",30);
- toast(S.solved<5?`الموقف اتصلّح! فاضل ${5-S.solved}`:"المدرسة كلها نوّرت!");
+ toast(S.solved<5?`أُصلح الموقف! بقي ${5-S.solved}`:"أشرقت المدرسة كلها!");
  if(S.solved===5)setTimeout(finale,1800);
 }
 function finale(){S.mode="finale";sfx.win();confettiRain();$("hint").hidden=true;$("pad").hidden=true;
