@@ -6,7 +6,7 @@
 <title>درع الصداقة</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@600;800&family=Tajawal:wght@400;500;700;800&display=swap">
 <style>
-/* Layout: full-screen 3D school yard; HTML overlays (HUD, dialog, start, certificate) float above the canvas */
+/* Layout: full-screen 3D school (corridor + big yard); HTML overlays float above the canvas: HUD, D-pad, minimap, dialogs */
 :root{
   --ink:#10292E; --panel:rgba(255,255,255,.94); --panel-ink:#10292E; --muted:#4A666B;
   --brand:#0F7A71; --brand-soft:#D3EEE9; --sun:#FFC233; --on-sun:#2B2104;
@@ -19,7 +19,7 @@
 [hidden]{display:none!important}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;overflow:hidden}
-body{background:var(--night);color:var(--panel-ink);font-family:var(--body);font-size:18px;line-height:1.6}
+body{background:var(--night);color:var(--panel-ink);font-family:var(--body);font-size:clamp(18px,1.25vw,26px);line-height:1.6}
 canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:pointer}
 h1,h2,h3{font-family:var(--display);margin:0;line-height:1.2;text-wrap:balance}
 p{margin:0}
@@ -31,35 +31,58 @@ p{margin:0}
 .hud .grp{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .pill{background:var(--panel);border-radius:999px;padding:6px 16px;font-weight:800;font-variant-numeric:tabular-nums;box-shadow:0 4px 14px rgba(0,0,0,.18)}
 .pill.sun{background:var(--sun);color:var(--on-sun)}
+.pill.lvl{background:var(--brand);color:#fff}
 .meterbox{background:var(--panel);border-radius:999px;padding:6px 14px;display:flex;gap:10px;align-items:center;font-weight:800;box-shadow:0 4px 14px rgba(0,0,0,.18)}
-.meter{width:min(32vw,220px);height:14px;border-radius:99px;background:var(--line);overflow:hidden}
+.meter{width:min(26vw,200px);height:14px;border-radius:99px;background:var(--line);overflow:hidden}
 .meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--sun),var(--good));transition:width .6s}
-.iconbtn{pointer-events:auto;font:inherit;font-weight:800;border:0;border-radius:999px;padding:6px 14px;background:var(--panel);color:var(--panel-ink);cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.iconbtn{pointer-events:auto;font:inherit;font-weight:800;border:0;border-radius:999px;padding:10px 18px;min-height:48px;background:var(--panel);color:var(--panel-ink);cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.18)}
 
 .hint{position:fixed;left:0;right:0;bottom:0;z-index:5;text-align:center;pointer-events:none;
   padding-bottom:calc(14px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.hint span{display:inline-block;background:rgba(12,34,38,.72);color:#fff;border-radius:999px;padding:6px 18px;font-weight:700;font-size:.95rem}
-.toast{position:fixed;left:50%;top:22%;transform:translate(-50%,0);z-index:6;pointer-events:none;
-  background:var(--sun);color:var(--on-sun);font-family:var(--display);font-weight:800;font-size:clamp(1.4rem,4vw,2.4rem);
-  padding:8px 28px;border-radius:999px;box-shadow:0 10px 30px rgba(0,0,0,.25);white-space:nowrap;max-width:92vw;overflow:hidden;text-overflow:ellipsis;
+.hint span{display:inline-block;background:rgba(12,34,38,.78);color:#fff;border-radius:999px;padding:6px 18px;font-weight:700;font-size:.95rem}
+@media (max-width:1150px){.hint{display:none}}
+.toast{position:fixed;left:50%;top:20%;transform:translate(-50%,0);z-index:6;pointer-events:none;
+  background:var(--sun);color:var(--on-sun);font-family:var(--display);font-weight:800;font-size:clamp(1.3rem,3.6vw,2.3rem);
+  padding:8px 28px;border-radius:28px;box-shadow:0 10px 30px rgba(0,0,0,.25);max-width:92vw;text-align:center;line-height:1.35;
   animation:pop .35s ease-out}
 @keyframes pop{from{transform:translate(-50%,20px) scale(.7);opacity:0}}
+
+/* D-pad (bottom left) */
+.pad{position:fixed;z-index:6;left:max(18px,env(safe-area-inset-left,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));
+  display:grid;grid-template-columns:repeat(3,var(--k));grid-template-rows:repeat(3,var(--k));gap:8px;--k:clamp(60px,6.5vw,110px);direction:ltr}
+.pad button{font:inherit;border:0;border-radius:22px;background:var(--panel);color:var(--brand);
+  box-shadow:0 6px 0 rgba(0,0,0,.18),0 10px 24px rgba(0,0,0,.2);cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none;display:flex;align-items:center;justify-content:center}
+.pad button.on{background:var(--sun);color:var(--on-sun);transform:translateY(4px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+.pad .u{grid-area:1/2}.pad .l{grid-area:2/1}.pad .r{grid-area:2/3}.pad .d{grid-area:3/2}
+.pad svg{width:55%;height:55%;fill:currentColor}
+
+/* minimap (bottom right) */
+.map{position:fixed;z-index:6;right:max(18px,env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));
+  background:var(--panel);border-radius:20px;padding:8px;box-shadow:0 10px 24px rgba(0,0,0,.25);display:flex;flex-direction:column;gap:4px;pointer-events:none}
+.map b{font-family:var(--display);font-size:.95rem;text-align:center;color:var(--brand)}
+.map canvas{width:clamp(150px,17vw,300px);height:auto;aspect-ratio:208/162;border-radius:12px;display:block}
+.legend{display:flex;gap:10px;justify-content:center;font-size:.75rem;font-weight:700;color:var(--muted);flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-inline-end:4px;vertical-align:middle}
+
+.fade{position:fixed;inset:0;z-index:20;background:#0C2226;opacity:0;pointer-events:none;transition:opacity .5s}
+.fade.on{opacity:1}
 
 .layer{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;overflow-y:auto;
   padding-block:calc(20px + env(safe-area-inset-top,0px)) calc(20px + env(safe-area-inset-bottom,0px));
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .layer.dim{background:rgba(8,26,30,.45)}
-.panel{background:var(--panel);color:var(--panel-ink);border-radius:26px;padding:clamp(18px,3vw,32px);width:min(680px,100%);
+.panel{background:var(--panel);color:var(--panel-ink);border-radius:26px;padding:clamp(18px,3vw,32px);width:min(720px,100%);
   display:flex;flex-direction:column;gap:14px;box-shadow:0 20px 60px rgba(0,0,0,.35);margin:auto;animation:pop2 .35s ease-out}
 @keyframes pop2{from{transform:translateY(24px) scale(.96);opacity:0}}
-.eyebrow{font-size:.9rem;font-weight:800;letter-spacing:.04em;color:var(--brand)}
+.eyebrow{font-size:.9rem;font-weight:800;letter-spacing:.02em;color:var(--brand)}
 .muted{color:var(--muted)}
 
-.title{font-size:clamp(3rem,11vw,6.4rem);font-weight:800;color:var(--sun);line-height:1;
+.title{font-size:clamp(3rem,10vw,6.2rem);font-weight:800;color:var(--sun);line-height:1;
   text-shadow:0 4px 0 #B07A00,0 10px 24px rgba(0,0,0,.35)}
-.start{background:rgba(12,34,38,.78);color:#fff;text-align:center;align-items:center;backdrop-filter:blur(4px)}
+.start{background:rgba(12,34,38,.8);color:#fff;text-align:center;align-items:center;backdrop-filter:blur(4px)}
 .start .muted{color:#CFE5E1}
-.start .sub{font-family:var(--display);font-size:clamp(1.3rem,3.6vw,2rem);font-weight:800}
+.start .sub{font-family:var(--display);font-size:clamp(1.3rem,3.4vw,2rem);font-weight:800}
+.school{background:var(--sun);color:var(--on-sun);border-radius:999px;padding:4px 18px;font-weight:800}
 .signs{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%}
 @media (max-width:560px){.signs{grid-template-columns:1fr}}
 .sign{background:rgba(255,255,255,.1);border-radius:16px;padding:10px 12px;text-align:center}
@@ -72,9 +95,9 @@ p{margin:0}
 .btn.sun{background:var(--sun);color:var(--on-sun);font-size:1.2rem}
 .btn.ghost{background:transparent;color:var(--brand);border:2px solid var(--brand)}
 .start .btn.ghost{color:#fff;border-color:rgba(255,255,255,.6)}
-.btn:focus-visible,.opt:focus-visible,.iconbtn:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
+.btn:focus-visible,.opt:focus-visible,.iconbtn:focus-visible,.pad button:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
 
-.situation{font-size:clamp(1.15rem,2.6vw,1.45rem);font-weight:700;background:var(--brand-soft);border-radius:16px;padding:16px 18px}
+.situation{font-size:clamp(1.15rem,2.4vw,1.45rem);font-weight:700;background:var(--brand-soft);border-radius:16px;padding:16px 18px}
 .opts{display:flex;flex-direction:column;gap:10px}
 .opt{font:inherit;font-weight:500;text-align:start;background:#fff;color:var(--panel-ink);border:2px solid var(--line);border-radius:16px;padding:13px 16px;cursor:pointer}
 .opt:hover:not([disabled]){border-color:var(--brand)}
@@ -86,34 +109,26 @@ p{margin:0}
 .fb.bad{background:var(--bad-soft)} .fb.bad b{color:var(--bad)}
 .fb b{font-family:var(--display);font-size:1.25rem}
 
-.cert{text-align:center;align-items:center;border:5px double var(--sun)}
+.center{text-align:center;align-items:center}
+.cert{border:5px double var(--sun)}
 .cert .name{font-family:var(--display);font-size:clamp(2.2rem,8vw,3.6rem);font-weight:800;color:var(--brand);line-height:1.15}
 .rank{background:var(--sun);color:var(--on-sun);border-radius:999px;padding:4px 20px;font-weight:800;font-family:var(--display);font-size:1.3rem}
 .promise{background:var(--brand-soft);border-radius:16px;padding:12px 16px;font-weight:700}
-/* on-screen controls for the smart board */
-body{font-size:clamp(18px,1.25vw,26px)}
-.iconbtn{padding:10px 18px;min-height:48px}
-.pad{position:fixed;z-index:6;left:max(18px,env(safe-area-inset-left,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));
-  display:grid;grid-template-columns:repeat(3,var(--k));grid-template-rows:repeat(3,var(--k));gap:8px;--k:clamp(64px,7vw,110px);direction:ltr}
-.pad button{font:inherit;font-size:calc(var(--k)*.42);font-weight:800;border:0;border-radius:22px;background:var(--panel);color:var(--brand);
-  box-shadow:0 6px 0 rgba(0,0,0,.18),0 10px 24px rgba(0,0,0,.2);cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none;display:flex;align-items:center;justify-content:center}
-.pad button.on{background:var(--sun);color:var(--on-sun);transform:translateY(4px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
-.pad button:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
-.pad .u{grid-area:1/2}.pad .l{grid-area:2/1}.pad .r{grid-area:2/3}.pad .d{grid-area:3/2}
-.pad svg{width:55%;height:55%;fill:currentColor}
-@media (max-width:760px){.hint{display:none}}
+.stats{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.stats span{background:var(--brand-soft);border-radius:14px;padding:8px 16px;font-weight:800}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 
-<canvas id="c" aria-label="ساحة المدرسة ثلاثية الأبعاد"></canvas>
+<canvas id="c" aria-label="مدرسة ثلاثية الأبعاد"></canvas>
 
 <div class="hud" id="hud" hidden>
   <div class="grp">
+    <span class="pill lvl">المستوى: <span id="hLvl">1</span> / 3</span>
     <span class="pill sun">النقاط: <span id="hScore">0</span></span>
     <span class="pill">المواقف: <span id="hMis">0</span> / 5</span>
-    <span class="pill">النجوم: <span id="hStar">0</span> / 8</span>
+    <span class="pill">النجوم: <span id="hStar">0</span> / <span id="hStarT">8</span></span>
   </div>
   <div class="grp">
     <span class="meterbox">نور المدرسة <span class="meter"><i id="hMeter"></i></span></span>
@@ -122,20 +137,30 @@ body{font-size:clamp(18px,1.25vw,26px)}
     <button class="iconbtn" id="restart">ابدأ من جديد</button>
   </div>
 </div>
+
 <div class="pad" id="pad" hidden aria-label="أزرار الحركة">
   <button class="u" data-k="u" aria-label="إلى الأمام"><svg viewBox="0 0 10 10"><path d="M5 1 9.5 8h-9z"/></svg></button>
   <button class="l" data-k="l" aria-label="إلى اليسار"><svg viewBox="0 0 10 10"><path d="M1 5 8 .5v9z"/></svg></button>
   <button class="r" data-k="r" aria-label="إلى اليمين"><svg viewBox="0 0 10 10"><path d="M9 5 2 .5v9z"/></svg></button>
   <button class="d" data-k="d" aria-label="إلى الخلف"><svg viewBox="0 0 10 10"><path d="M5 9 9.5 2h-9z"/></svg></button>
 </div>
-<div class="hint" id="hint" hidden><span>تحرّك بالأزرار، أو المس الأرض، أو استخدم الأسهم. اذهب إلى الدوائر الحمراء وأصلح الموقف.</span></div>
+
+<div class="map" id="map" hidden>
+  <b>خريطة الساحة</b>
+  <canvas id="mm" width="416" height="324"></canvas>
+  <div class="legend"><span><i style="background:#E8423B"></i>موقف</span><span><i style="background:#FFC233"></i>نجمة</span><span><i style="background:#1F8A4C"></i>تم</span></div>
+</div>
+
+<div class="hint" id="hint" hidden><span>تحرّك بالأزرار أو بلمس الأرض أو بالأسهم. انظر إلى الخريطة لتجد المواقف والنجوم.</span></div>
 <div id="toastBox"></div>
+<div class="fade" id="fade"></div>
 
 <div class="layer" id="startL">
   <div class="panel start">
     <div class="title">لا للتنمر</div>
     <div class="sub">درع الصداقة</div>
-    <p class="muted">المدرسة مظلمة وحزينة لأن فيها تنمرًا. تجوّل في الساحة، وأصلح خمسة مواقف تنمر، واجمع نجوم الكلام الطيب، فتشرق المدرسة من جديد.</p>
+    <span class="school">مدرسة IPS الرسمية الدولية بالعبور</span>
+    <p class="muted">تبدأ رحلتك في ممر المدرسة. اخرج إلى الساحة، وأصلح مواقف التنمر، واجمع نجوم الكلام الطيب. في اللعبة ثلاثة مستويات، وكل مستوى يُفتح بعد أن تُصلح كل المواقف وتجمع كل النجوم.</p>
     <div class="signs">
       <div class="sign"><b>مقصود</b>يعلم أنه يؤذي غيره</div>
       <div class="sign"><b>متكرر</b>لا يحدث مرة واحدة فقط</div>
@@ -164,14 +189,24 @@ body{font-size:clamp(18px,1.25vw,26px)}
   </div>
 </div>
 
+<div class="layer dim" id="lvlL" hidden>
+  <div class="panel center">
+    <span class="eyebrow">أحسنت!</span>
+    <h1 style="font-size:clamp(2rem,6vw,3rem)" id="lT"></h1>
+    <div class="stats" id="lS"></div>
+    <p id="lP"></p>
+    <div class="row"><button class="btn sun" id="lGo"></button></div>
+  </div>
+</div>
+
 <div class="layer dim" id="certL" hidden>
-  <div class="panel cert">
-    <span class="eyebrow">شهادة مدرسة بلا تنمر</span>
+  <div class="panel center cert">
+    <span class="eyebrow">شهادة مدرسة بلا تنمر · مدرسة IPS الرسمية الدولية بالعبور</span>
     <h1 style="font-size:clamp(1.6rem,5vw,2.4rem)">أشرقت المدرسة بفضلك</h1>
     <p>نشهد بأن</p>
     <div class="name" id="cName"></div>
     <span class="rank" id="cRank"></span>
-    <p>أصلح خمسة مواقف تنمر، وجمع <b id="cScore"></b> نقطة من <b>140</b>.</p>
+    <p>أنهى المستويات الثلاثة، وأصلح خمسة عشر موقف تنمر، وجمع <b id="cScore"></b> نقطة من <b id="cMax"></b>.</p>
     <p class="promise">وعدي: لن أتنمر على أحد، وسأقف بجانب كل من يتعرض للتنمر، وسأخبر شخصًا كبيرًا أثق به إذا رأيت تنمرًا.</p>
     <p class="muted">التقطوا صورة لهذه الشاشة وعلّقوها في الفصل.</p>
     <div class="row"><button class="btn" id="again">العب مرة أخرى</button></div>
@@ -183,56 +218,123 @@ body{font-size:clamp(18px,1.25vw,26px)}
 (function(){
 const T=THREE,$=id=>document.getElementById(id);
 
-/* ---------- data ---------- */
-const MISSIONS=[
- {at:[-22,-8],bullies:2,n:"الموقف ١ · النظارة",q:"يسخر بعض الطلاب من زميلكم لأنه يلبس نظارة كبيرة، وقد أوشك على البكاء.",o:[
-  {t:"أقف بجانبه وأقول بهدوء: «كفى، هذا ليس مزاحًا»، ثم أصطحبه لنلعب معًا.",g:1,f:"أحسنت! حين يقف أحدٌ بجانب المظلوم، يتوقف المتنمر غالبًا."},
-  {t:"أضحك معهم حتى لا أبدو مختلفًا.",g:0,f:"الضحك يُشعر المتنمر بأن الناس معه، فيستمر في أذاه."},
-  {t:"أمضي وأتظاهر بأنني لم أرَ شيئًا.",g:0,f:"السكوت يجعل زميلك يشعر بأنه وحيد تمامًا. حاول مرة أخرى."}]},
- {at:[24,-12],bullies:0,n:"الموقف ٢ · الطالب الجديد",q:"طالب جديد يجلس وحده في الاستراحة كل يوم، ولا يكلّمه أحد.",o:[
-  {t:"أسخر من لهجته لأنها مختلفة.",g:0,f:"الاختلاف ليس عيبًا، والسخرية من شخص لأنه مختلف تنمّر."},
-  {t:"أذهب إليه، وأعرّفه بنفسي، وأدعوه ليلعب معنا.",g:1,f:"تصرّف بطولي! كلمة لطيفة واحدة قد تغيّر يومه كله."},
-  {t:"أتركه، فلعله يحب الجلوس وحده.",g:0,f:"ربما يكون خجولًا وينتظر من يكلّمه. حاول مرة أخرى."}]},
- {at:[-24,20],bullies:1,big:1,n:"الموقف ٣ · المصروف",q:"طالب أكبر سنًّا يأخذ مصروف زميلك كل يوم، ويهدده قائلًا: «إن أخبرت أحدًا فسترى».",o:[
-  {t:"أنصح زميلي بأن يعطيه المال ويسكت.",g:0,f:"السكوت لن يوقفه، وسيستمر في ذلك كل يوم."},
-  {t:"أضرب الطالب الأكبر.",g:0,f:"قد يتأذى أحد، وقد تُعاقَب أنت أيضًا. هناك حل أكثر أمانًا."},
-  {t:"أذهب أنا وزميلي لنخبر الأخصائي الاجتماعي أو المعلمة.",g:1,f:"تصرّف صحيح تمامًا. إخبار شخص كبير ليس وشاية، بل هو حماية."}]},
- {at:[24,20],bullies:2,phone:1,n:"الموقف ٤ · مجموعة الفصل",q:"يسخر أصدقاؤك من صورة زميلتكم في مجموعة الفصل على الهاتف، ويطلبون منك أن ترسل رمزًا ضاحكًا.",o:[
-  {t:"أرسل رمزًا صغيرًا، فلا ضرر في ذلك.",g:0,f:"حتى الرمز الصغير مشاركة في الأذى، وستراه زميلتك."},
-  {t:"أرفض وأكتب: «توقفوا عن هذا من فضلكم»، وأخبر شخصًا كبيرًا إن استمروا.",g:1,f:"هذه هي الشجاعة. التنمر عبر الإنترنت تنمر حقيقي."},
-  {t:"أغادر المجموعة دون تعليق.",g:0,f:"أحسنت لأنك لم تشارك، لكن زميلتك ما زالت تحتاج إلى من يقف معها."}]},
- {at:[0,-28],bullies:2,n:"الموقف ٥ · التأتأة",q:"يقلّد بعض الطلاب طريقة كلام زميلهم الذي يتأتئ؛ ليُضحكوا الفصل عليه.",o:[
-  {t:"أقول لهم: «هذه السخرية تجرح»، وأقول لزميلي: «أكمل على مهلك، نحن نسمعك».",g:1,f:"رائع! دافعت عنه وجعلته يشعر بأنه مقبول كما هو."},
-  {t:"أقلّده أنا أيضًا، فالأمر مجرد مزاح.",g:0,f:"المزاح يكون مزاحًا حين يضحك الجميع، فإن تألّم أحدٌ صار تنمرًا."},
-  {t:"أنتظر حتى تتصرف المعلمة.",g:0,f:"ربما لم ترَ المعلمة ما حدث. تستطيع أن تتصرف الآن، ثم تخبرها أيضًا."}]}
+/* ================= data ================= */
+const LEVELS=[
+ {stars:8,missions:[
+  {at:[-30,-10],bullies:2,glasses:1,n:"النظارة",q:"يسخر بعض الطلاب من زميلكم لأنه يلبس نظارة كبيرة، وقد أوشك على البكاء.",o:[
+   {t:"أقف بجانبه وأقول بهدوء: «كفى، هذا ليس مزاحًا»، ثم أصطحبه لنلعب معًا.",g:1,f:"أحسنت! حين يقف أحدٌ بجانب المظلوم، يتوقف المتنمر غالبًا."},
+   {t:"أضحك معهم حتى لا أبدو مختلفًا.",g:0,f:"الضحك يُشعر المتنمر بأن الناس معه، فيستمر في أذاه."},
+   {t:"أمضي وأتظاهر بأنني لم أرَ شيئًا.",g:0,f:"السكوت يجعل زميلك يشعر بأنه وحيد تمامًا. حاول مرة أخرى."}]},
+  {at:[34,-14],bullies:0,n:"الطالب الجديد",q:"طالب جديد يجلس وحده في الاستراحة كل يوم، ولا يكلّمه أحد.",o:[
+   {t:"أسخر من لهجته لأنها مختلفة.",g:0,f:"الاختلاف ليس عيبًا، والسخرية من شخص لأنه مختلف تنمّر."},
+   {t:"أذهب إليه، وأعرّفه بنفسي، وأدعوه ليلعب معنا.",g:1,f:"تصرّف بطولي! كلمة لطيفة واحدة قد تغيّر يومه كله."},
+   {t:"أتركه، فلعله يحب الجلوس وحده.",g:0,f:"ربما يكون خجولًا وينتظر من يكلّمه. حاول مرة أخرى."}]},
+  {at:[-36,30],bullies:1,big:1,n:"المصروف",q:"طالب أكبر سنًّا يأخذ مصروف زميلك كل يوم، ويهدده قائلًا: «إن أخبرت أحدًا فسترى».",o:[
+   {t:"أنصح زميلي بأن يعطيه المال ويسكت.",g:0,f:"السكوت لن يوقفه، وسيستمر في ذلك كل يوم."},
+   {t:"أضرب الطالب الأكبر.",g:0,f:"قد يتأذى أحد، وقد تُعاقَب أنت أيضًا. هناك حل أكثر أمانًا."},
+   {t:"أذهب أنا وزميلي لنخبر الأخصائي الاجتماعي أو المعلمة.",g:1,f:"تصرّف صحيح تمامًا. إخبار شخص كبير ليس وشاية، بل هو حماية."}]},
+  {at:[38,32],bullies:2,phone:1,n:"مجموعة الفصل",q:"يسخر أصدقاؤك من صورة زميلتكم في مجموعة الفصل على الهاتف، ويطلبون منك أن ترسل رمزًا ضاحكًا.",o:[
+   {t:"أرسل رمزًا صغيرًا، فلا ضرر في ذلك.",g:0,f:"حتى الرمز الصغير مشاركة في الأذى، وستراه زميلتك."},
+   {t:"أرفض وأكتب: «توقفوا عن هذا من فضلكم»، وأخبر شخصًا كبيرًا إن استمروا.",g:1,f:"هذه هي الشجاعة. التنمر عبر الإنترنت تنمر حقيقي."},
+   {t:"أغادر المجموعة دون تعليق.",g:0,f:"أحسنت لأنك لم تشارك، لكن زميلتك ما زالت تحتاج إلى من يقف معها."}]},
+  {at:[0,-26],bullies:2,n:"التأتأة",q:"يقلّد بعض الطلاب طريقة كلام زميلهم الذي يتأتئ؛ ليُضحكوا الفصل عليه.",o:[
+   {t:"أقول لهم: «هذه السخرية تجرح»، وأقول لزميلي: «أكمل على مهلك، نحن نسمعك».",g:1,f:"رائع! دافعت عنه وجعلته يشعر بأنه مقبول كما هو."},
+   {t:"أقلّده أنا أيضًا، فالأمر مجرد مزاح.",g:0,f:"المزاح يكون مزاحًا حين يضحك الجميع، فإن تألّم أحدٌ صار تنمرًا."},
+   {t:"أنتظر حتى تتصرف المعلمة.",g:0,f:"ربما لم ترَ المعلمة ما حدث. تستطيع أن تتصرف الآن، ثم تخبرها أيضًا."}]}
+ ]},
+ {stars:10,missions:[
+  {at:[-70,-20],bullies:2,n:"الشائعة",q:"ينشر بعض الطلاب إشاعة كاذبة عن زميلة لكم، وصارت تبكي ولا تريد الحضور إلى المدرسة.",o:[
+   {t:"أنقل الإشاعة لأصدقائي، فالكل يتحدث عنها.",g:0,f:"نقل الإشاعة يزيد الأذى، حتى لو لم تكن أنت من بدأها."},
+   {t:"أرفض نقلها، وأقول إنها قد تكون كذبًا، وأطمئن زميلتي وأخبر المعلمة.",g:1,f:"أحسنت! أوقفت الإشاعة عندك، ووقفت مع زميلتك."},
+   {t:"أسكت، فالأمر لا يخصني.",g:0,f:"التنمر يخص الجميع، والصمت يترك زميلتك وحدها. حاول مرة أخرى."}]},
+  {at:[70,-25],bullies:2,n:"الحذاء القديم",q:"يضحك بعض الطلاب على زميلكم لأن حذاءه قديم، ويشيرون إليه أمام الجميع.",o:[
+   {t:"أقول إن قيمة الإنسان بأخلاقه لا بملابسه، وأقف بجانبه.",g:1,f:"رائع! الاحترام لا يُقاس بالملابس."},
+   {t:"أنظر إلى حذائه وأضحك قليلًا.",g:0,f:"حتى الضحكة الصغيرة تجرح وتشجع المتنمرين."},
+   {t:"أبتعد بسرعة حتى لا يسخروا مني أنا أيضًا.",g:0,f:"الخوف طبيعي، لكن يمكنك على الأقل أن تخبر شخصًا كبيرًا. حاول مرة أخرى."}]},
+  {at:[-62,62],bullies:2,n:"فريق الكرة",q:"في كل مباراة لا يختار أحدٌ زميلًا معينًا في فريقه، ويقولون له: «أنت بطيء، لا نريدك».",o:[
+   {t:"أقترح أن يلعب معنا، وأن نقسم الفرق بالقرعة.",g:1,f:"فكرة عادلة! الرياضة للجميع، والكل يتعلم باللعب."},
+   {t:"أوافقهم، فنحن نريد أن نفوز.",g:0,f:"الفوز لا يستحق أن نجرح زميلًا ونبعده كل مرة."},
+   {t:"أقول له أن يلعب وحده.",g:0,f:"هذا يجعله يشعر بأنه غير مرغوب فيه. حاول مرة أخرى."}]},
+  {at:[66,64],bullies:2,n:"الحقيبة المخبّأة",q:"خبّأ بعض الطلاب حقيبة زميلكم، وهو يبحث عنها خائفًا وهم يضحكون.",o:[
+   {t:"أضحك معهم، فهي مجرد مزحة.",g:0,f:"المزحة التي تُخيف أحدًا وتؤذيه ليست مزحة."},
+   {t:"أساعده في البحث دون أن أقول لهم شيئًا.",g:0,f:"مساعدتك جيدة، لكن عليك أيضًا أن تقول لهم إن هذا خطأ. حاول مرة أخرى."},
+   {t:"أعيد الحقيبة إلى صاحبها، وأقول لهم بهدوء إن هذا ليس مزاحًا.",g:1,f:"أحسنت! ساعدت زميلك وأوقفت الأذى."}]},
+  {at:[0,80],bullies:2,n:"اللقب المزعج",q:"ينادي بعض الطلاب زميلًا بلقب مزعج بدل اسمه، وهو يطلب منهم أن يتوقفوا.",o:[
+   {t:"أناديه باسمه الحقيقي، وأطلب منهم أن يحترموا طلبه.",g:1,f:"رائع! لكل إنسان الحق في أن يُنادى باسمه."},
+   {t:"أستخدم اللقب أنا أيضًا، فالكل يستخدمه.",g:0,f:"كون الجميع يفعل الخطأ لا يجعله صوابًا."},
+   {t:"أقول له: «لا تهتم، إنهم يمزحون».",g:0,f:"مشاعره مهمة، وقد طلب منهم أن يتوقفوا. حاول مرة أخرى."}]}
+ ]},
+ {stars:12,missions:[
+  {at:[-86,22],bullies:2,n:"المشية المختلفة",q:"يقلّد بعض الطلاب مشية زميل يعرج بسبب إصابة في قدمه.",o:[
+   {t:"أطلب منهم أن يتوقفوا، وأساعد زميلي في حمل أغراضه إن احتاج.",g:1,f:"أحسنت! السخرية من الإصابة أو الإعاقة تنمر مؤلم جدًا."},
+   {t:"أتجاهل الأمر، فهو لم يشتكِ.",g:0,f:"ربما يخجل من الشكوى، ووقوفك معه يفرق كثيرًا. حاول مرة أخرى."},
+   {t:"أصوّرهم بالهاتف لأنشر الفيديو.",g:0,f:"نشر الفيديو يزيد إحراج زميلك وينشر الأذى أكثر."}]},
+  {at:[86,16],bullies:2,phone:1,n:"اللعبة الإلكترونية",q:"في لعبة على الإنترنت، يطرد لاعبون زميلك من الفريق ويرسلون له شتائم كل يوم.",o:[
+   {t:"أرسل لهم شتائم أسوأ.",g:0,f:"الرد بالشتائم يكبّر المشكلة، ولا يحمي زميلك."},
+   {t:"أحتفظ بصورة للشاشة، وأُبلغ عن الحسابات، وأخبر شخصًا كبيرًا.",g:1,f:"تصرّف ذكي! الدليل والإبلاغ وإخبار الكبار توقف التنمر الإلكتروني."},
+   {t:"أقول لزميلي أن يترك اللعبة ولا يخبر أحدًا.",g:0,f:"إخفاء الأمر يجعل المتنمرين يكررونه مع غيره. حاول مرة أخرى."}]},
+  {at:[-36,88],bullies:2,n:"أنت في الموقف",q:"هذه المرة يسخر الطلاب منك أنت، ويقولون كلامًا يجرحك.",o:[
+   {t:"أبكي وأسكت ولا أخبر أحدًا.",g:0,f:"مشاعرك مهمة، ولا يجب أن تحملها وحدك."},
+   {t:"أقول بثقة وهدوء: «توقفوا»، ثم أبتعد، وأخبر شخصًا كبيرًا أثق به.",g:1,f:"ممتاز! هذه هي الخطوات الثلاث: قل لا، وابتعد، وأخبر كبيرًا."},
+   {t:"أسخر منهم بكلام أكثر إيلامًا.",g:0,f:"الرد بالإيذاء يجعلك متنمرًا أنت أيضًا. حاول مرة أخرى."}]},
+  {at:[40,88],bullies:2,n:"الدرجات",q:"يسخر بعض الطلاب من زميلكم لأنه حصل على درجة منخفضة في الاختبار، ويقولون إنه غبي.",o:[
+   {t:"أشجعه، وأعرض عليه أن نذاكر معًا.",g:1,f:"رائع! الكل يتعثر أحيانًا، والتشجيع يصنع النجاح."},
+   {t:"أقول إنهم محقون، فدرجته سيئة فعلًا.",g:0,f:"الدرجة لا تحدد قيمة الإنسان، والكلام الجارح لا يساعده."},
+   {t:"أنصحه بأن يخفي درجاته في المرة القادمة.",g:0,f:"المشكلة ليست في درجته، بل في سخريتهم. حاول مرة أخرى."}]},
+  {at:[-46,-30],bullies:1,n:"صديقي المتنمر",q:"صديقك المقرّب يتنمر على طالب أصغر منه، ويريدك أن تشاركه.",o:[
+   {t:"أشاركه حتى لا أخسر صداقته.",g:0,f:"الصديق الحقيقي لا يطلب منك أن تؤذي غيرك."},
+   {t:"أتحدث مع صديقي بهدوء، وأطلب منه أن يتوقف ويعتذر.",g:1,f:"أحسنت! أحيانًا يحتاج الصديق إلى من يصارحه بخطئه."},
+   {t:"أبتعد عنه دون أن أقول شيئًا.",g:0,f:"صديقك قد يستمع إليك أكثر من غيرك. حاول مرة أخرى."}]}
+ ]}
 ];
-const WORDS=["أنت مهم","تعالَ العب معنا","أنا بجانبك","فكرتك رائعة","شكرًا لك","أنا آسف","هل أنت بخير؟","أحسنت"];
-const STARS_AT=[[-8,2],[10,-2],[-34,4],[36,4],[-12,34],[12,34],[-36,-24],[38,-26]];
+const WORDS=["أنت مهم","تعالَ العب معنا","أنا بجانبك","فكرتك رائعة","شكرًا لك","أنا آسف","هل أنت بخير؟","أحسنت","أنت صديق رائع","نحن فريق واحد","لا تحزن","أنا فخور بك"];
+const LEVEL_MAX=LEVELS.map(L=>L.missions.length*20+L.stars*5);
+const TOTAL_MAX=LEVEL_MAX.reduce((a,b)=>a+b,0);
+const BOUNDS={x0:-98,x1:98,z0:-40,z1:98};
+const MAPR={x0:-104,x1:104,z0:-58,z1:104};
+const CX=400,CZ=0; /* corridor location */
 
-/* ---------- renderer & scene ---------- */
+/* ================= renderer & scene ================= */
 const canvas=$("c");
 const renderer=new T.WebGLRenderer({canvas,antialias:true});
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));
 renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;
-
 const scene=new T.Scene();
 const SKY0=new T.Color(0x8796A3),SKY1=new T.Color(0x7FCBFF);
-scene.background=SKY0.clone();scene.fog=new T.Fog(SKY0.clone(),70,150);
-const camera=new T.PerspectiveCamera(50,1,.1,400);
+scene.background=SKY0.clone();scene.fog=new T.Fog(SKY0.clone(),95,230);
+const camera=new T.PerspectiveCamera(50,1,.1,500);
 const hemi=new T.HemisphereLight(0xffffff,0x6f9a55,.55);scene.add(hemi);
-const sun=new T.DirectionalLight(0xfff2d6,.75);sun.position.set(30,55,25);sun.castShadow=true;
-sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-70,right:70,top:70,bottom:-70,near:1,far:160});
-scene.add(sun);
+const sun=new T.DirectionalLight(0xfff2d6,.75);sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-60,right:60,top:60,bottom:-60,near:1,far:160});
+scene.add(sun);scene.add(sun.target);
 
 const M=(c,o)=>new T.MeshStandardMaterial(Object.assign({color:c,roughness:.85,flatShading:true},o||{}));
 function mesh(geo,mat,x=0,y=0,z=0,parent=scene){const m=new T.Mesh(geo,mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;}
 let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+const flatMesh=(geo,mat,x,y,z)=>{const m=mesh(geo,mat,x,y,z);m.rotation.x=-Math.PI/2;m.castShadow=false;return m;};
 
-/* ground, court, path */
-const ground=mesh(new T.PlaneGeometry(200,200),M(0x79C16A));ground.rotation.x=-Math.PI/2;ground.castShadow=false;
-const court=mesh(new T.PlaneGeometry(22,14),M(0xE59A57));court.rotation.x=-Math.PI/2;court.position.set(0,.02,8);court.castShadow=false;
-const cline=mesh(new T.RingGeometry(2.6,2.9,40),M(0xffffff));cline.rotation.x=-Math.PI/2;cline.position.set(0,.04,8);cline.castShadow=false;
-const path=mesh(new T.PlaneGeometry(6,40),M(0xE8D9B5));path.rotation.x=-Math.PI/2;path.position.set(0,.015,-22);path.castShadow=false;
+/* text on canvas textures (Arabic) */
+const redraws=[];
+function textPlane(w,h,draw,parent,x,y,z,ry){
+ const c=document.createElement("canvas");c.width=1024;c.height=Math.round(1024*h/w);const ctx=c.getContext("2d");
+ const tex=new T.CanvasTexture(c);const f=()=>{draw(ctx,c.width,c.height);tex.needsUpdate=true;};f();redraws.push(f);
+ const m=new T.Mesh(new T.PlaneGeometry(w,h),new T.MeshBasicMaterial({map:tex}));m.position.set(x,y,z);m.rotation.y=ry||0;parent.add(m);return m;}
+function signDraw(lines,bg,fg,stripe){return (ctx,W,H)=>{
+ ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);if(stripe!==false){ctx.fillStyle="#FFC233";ctx.fillRect(0,H*.92,W,H*.08);}
+ ctx.textAlign="center";ctx.textBaseline="middle";ctx.direction="rtl";const n=lines.length;
+ lines.forEach((l,i)=>{ctx.fillStyle=l.c||fg;ctx.font=`800 ${Math.round(l.s*H)}px "Baloo Bhaijaan 2", Tajawal, sans-serif`;ctx.fillText(l.t,W/2,H*.92*(i+.5)/n,W*.92);});};}
+if(document.fonts)document.fonts.load('800 60px "Baloo Bhaijaan 2"').then(()=>redraws.forEach(f=>f())).catch(()=>{});
+
+/* ================= yard ================= */
+const ground=flatMesh(new T.PlaneGeometry(320,320),M(0x79C16A),0,0,20);ground.receiveShadow=true;
+flatMesh(new T.PlaneGeometry(22,14),M(0xE59A57),0,.02,8);
+flatMesh(new T.RingGeometry(2.6,2.9,40),M(0xffffff),0,.04,8);
+flatMesh(new T.PlaneGeometry(6,22),M(0xE8D9B5),0,.015,-33);
+/* football field */
+flatMesh(new T.PlaneGeometry(36,22),M(0x5FAE57),0,.02,46);
+flatMesh(new T.RingGeometry(3,3.3,40),M(0xffffff),0,.04,46);
+flatMesh(new T.PlaneGeometry(.3,22),M(0xffffff),0,.04,46);
+[-18,18].forEach(x=>{const wm=M(0xffffff);mesh(new T.BoxGeometry(.3,2.4,.3),wm,x,1.2,42.5);mesh(new T.BoxGeometry(.3,2.4,.3),wm,x,1.2,49.5);mesh(new T.BoxGeometry(.3,.3,7.3),wm,x,2.4,46);});
 
 /* school building */
 const school=new T.Group();school.position.set(0,0,-50);scene.add(school);
@@ -243,35 +345,76 @@ mesh(new T.ConeGeometry(10,6,4),M(0xC4563E),0,25,0.5,school).rotation.y=Math.PI/
 const winM=M(0x9ED6F0,{emissive:0x335566,emissiveIntensity:.2});
 for(let r=0;r<2;r++)for(let i=-6;i<=6;i++){if(Math.abs(i)<=1)continue;mesh(new T.BoxGeometry(2.6,2.6,.3),winM,i*4.4,5+r*6,6.1,school);}
 mesh(new T.BoxGeometry(5,7,.4),M(0x7A4B2A),0,3.5,7.1,school);
-/* sign with Arabic text */
-const sc=document.createElement("canvas");sc.width=1024;sc.height=200;const sx=sc.getContext("2d");
-const signTex=new T.CanvasTexture(sc);
-function drawSign(){sx.fillStyle="#0F7A71";sx.fillRect(0,0,1024,200);sx.fillStyle="#FFC233";sx.fillRect(0,180,1024,20);
- sx.fillStyle="#fff";sx.font='800 110px "Baloo Bhaijaan 2", Tajawal, sans-serif';sx.textAlign="center";sx.textBaseline="middle";sx.direction="rtl";
- sx.fillText("مدرسة بلا تنمر",512,98);signTex.needsUpdate=true;}
-drawSign();if(document.fonts)document.fonts.load('800 110px "Baloo Bhaijaan 2"').then(drawSign).catch(()=>{});
-const sign=new T.Mesh(new T.PlaneGeometry(20,3.9),new T.MeshBasicMaterial({map:signTex}));sign.position.set(0,13.6,7.05);school.add(sign);
-/* flag */
-mesh(new T.CylinderGeometry(.15,.15,14,8),M(0xdddddd),10,7,-40);
-const flag=mesh(new T.BoxGeometry(4,2.4,.1),M(0xFFC233),12,12.6,-40);
+textPlane(26,5,signDraw([{t:"مدرسة IPS الرسمية الدولية بالعبور",s:.32},{t:"مدرسة بلا تنمر",s:.27,c:"#FFC233"}],"#0F7A71","#fff"),school,0,13.4,7.2);
+mesh(new T.CylinderGeometry(.15,.15,14,8),M(0xdddddd),12,7,-40);
+const flag=mesh(new T.BoxGeometry(4,2.4,.1),M(0xFFC233),14,12.6,-40);
+
+/* fence */
+const fenceM=M(0xE9E2D0);
+[[-100,30,.4,140],[100,30,.4,140]].forEach(([x,z,w,d])=>{mesh(new T.BoxGeometry(w,.3,d),fenceM,x,1.4,z);mesh(new T.BoxGeometry(w,.3,d),fenceM,x,.7,z);});
+mesh(new T.BoxGeometry(200,.3,.4),fenceM,0,1.4,100);mesh(new T.BoxGeometry(200,.3,.4),fenceM,0,.7,100);
+for(let z=-40;z<=100;z+=10){mesh(new T.BoxGeometry(.5,1.9,.5),fenceM,-100,.95,z);mesh(new T.BoxGeometry(.5,1.9,.5),fenceM,100,.95,z);}
+for(let x=-90;x<100;x+=10)mesh(new T.BoxGeometry(.5,1.9,.5),fenceM,x,.95,100);
 
 /* trees */
+const treeSpots=[];
 function tree(x,z,s=1){const g=new T.Group();g.position.set(x,0,z);g.scale.setScalar(s);scene.add(g);
  mesh(new T.CylinderGeometry(.4,.55,3,7),M(0x8A5A34),0,1.5,0,g);
  mesh(new T.IcosahedronGeometry(2.4,0),M(0x3E9B4F),0,4.4,0,g);mesh(new T.IcosahedronGeometry(1.7,0),M(0x4FB15C),.6,6,.3,g);}
-for(let i=0;i<34;i++){const a=i/34*Math.PI*2,r=58+rnd()*14;const x=Math.cos(a)*r,z=Math.sin(a)*r;if(z<-40&&Math.abs(x)<40)continue;tree(x,z,.9+rnd()*.6);}
-[[-40,-6],[42,-2],[-10,46],[40,40],[-42,40]].forEach(p=>tree(p[0],p[1],1.1));
+for(let i=0;i<60;i++){const a=i/60*Math.PI*2,r=120+rnd()*18;const x=Math.cos(a)*r,z=20+Math.sin(a)*r;tree(x,z,1+rnd()*.7);}
+const allMissionSpots=LEVELS.flatMap(L=>L.missions.map(m=>m.at));
+const nearAny=(x,z,list,d)=>list.some(([a,b])=>Math.hypot(x-a,z-b)<d);
+for(let tries=0,n=0;n<18&&tries<400;tries++){const x=-92+rnd()*184,z=-34+rnd()*128;
+ if(nearAny(x,z,allMissionSpots,12)||nearAny(x,z,treeSpots,10)||(Math.abs(x)<22&&z>-6&&z<60)||(Math.abs(x)<8&&z<-14))continue;
+ treeSpots.push([x,z]);tree(x,z,1.1);n++;}
 /* benches */
 function bench(x,z,ry){const g=new T.Group();g.position.set(x,0,z);g.rotation.y=ry;scene.add(g);
  mesh(new T.BoxGeometry(4,.3,1.1),M(0xB9783F),0,1,0,g);mesh(new T.BoxGeometry(4,1,.25),M(0xB9783F),0,1.6,-.5,g);
  mesh(new T.BoxGeometry(.3,1,1),M(0x555555),-1.7,.5,0,g);mesh(new T.BoxGeometry(.3,1,1),M(0x555555),1.7,.5,0,g);}
-bench(-14,8,Math.PI/2);bench(14,8,-Math.PI/2);bench(30,-12,0);
+bench(-14,8,Math.PI/2);bench(14,8,-Math.PI/2);bench(-24,46,Math.PI/2);bench(24,46,-Math.PI/2);
 /* sky clouds */
 const skyClouds=[];
-for(let i=0;i<9;i++){const g=new T.Group();g.position.set(-90+i*22,30+rnd()*10,-60+rnd()*80);scene.add(g);
+for(let i=0;i<12;i++){const g=new T.Group();g.position.set(-150+i*26,34+rnd()*12,-60+rnd()*160);scene.add(g);
  for(let k=0;k<4;k++){const m=new T.Mesh(new T.IcosahedronGeometry(3+rnd()*2,0),M(0xffffff,{roughness:1}));m.position.set(k*3-4,rnd()*2,rnd()*2);g.add(m);}skyClouds.push(g);}
 
-/* ---------- shapes for hearts and stars ---------- */
+/* ================= corridor (start area) ================= */
+const cor=new T.Group();cor.position.set(CX,0,CZ);scene.add(cor);
+(function(){
+ const tc=document.createElement("canvas");tc.width=tc.height=128;const tx=tc.getContext("2d");
+ tx.fillStyle="#E9E3D3";tx.fillRect(0,0,128,128);tx.fillStyle="#D3CBB6";tx.fillRect(0,0,64,64);tx.fillRect(64,64,64,64);
+ const tt=new T.CanvasTexture(tc);tt.wrapS=tt.wrapT=T.RepeatWrapping;tt.repeat.set(2.5,13);
+ const fl=new T.Mesh(new T.PlaneGeometry(10,52),new T.MeshStandardMaterial({map:tt,roughness:.6}));fl.rotation.x=-Math.PI/2;fl.receiveShadow=true;cor.add(fl);
+ const wallM=M(0xF6EEDC),lowM=M(0x7FB9B1);
+ [-5.25,5.25].forEach(x=>{const w=mesh(new T.BoxGeometry(.5,9,52),wallM,x,4.5,0,cor);w.castShadow=false;const s=mesh(new T.BoxGeometry(.52,1.2,52),lowM,x,.6,0,cor);s.castShadow=false;});
+ mesh(new T.BoxGeometry(11,9,.5),wallM,0,4.5,26,cor).castShadow=false;
+ [[-3.75,3.5],[3.75,3.5]].forEach(([x,w])=>{mesh(new T.BoxGeometry(w,9,.5),wallM,x,4.5,-26,cor).castShadow=false;});
+ mesh(new T.BoxGeometry(4,3,.5),wallM,0,7.5,-26,cor).castShadow=false;
+ const ceil=new T.Mesh(new T.PlaneGeometry(11,52),M(0xFFFFFF,{side:T.DoubleSide}));ceil.rotation.x=Math.PI/2;ceil.position.y=9;cor.add(ceil);
+ for(let z=-20;z<=20;z+=8)mesh(new T.BoxGeometry(2.4,.12,1.2),new T.MeshBasicMaterial({color:0xFFFBEA}),0,8.92,z,cor).castShadow=false;
+ /* exit door */
+ textPlane(4,6,(ctx,W,H)=>{const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,"#7FE3A2");g.addColorStop(1,"#22A35A");ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle="#FFC233";ctx.lineWidth=40;ctx.strokeRect(20,20,W-40,H-40);ctx.fillStyle="#fff";ctx.textAlign="center";ctx.textBaseline="middle";ctx.direction="rtl";
+  ctx.font=`800 ${Math.round(H*.1)}px "Baloo Bhaijaan 2", Tajawal, sans-serif`;ctx.fillText("إلى الساحة",W/2,H*.38,W*.85);
+  ctx.beginPath();ctx.moveTo(W/2,H*.5);ctx.lineTo(W*.68,H*.66);ctx.lineTo(W*.58,H*.66);ctx.lineTo(W*.58,H*.8);ctx.lineTo(W*.42,H*.8);ctx.lineTo(W*.42,H*.66);ctx.lineTo(W*.32,H*.66);ctx.closePath();ctx.fill();},cor,0,3,-25.7);
+ textPlane(9.5,3,signDraw([{t:"مدرسة IPS",s:.36},{t:"الرسمية الدولية بالعبور",s:.26}],"#0F7A71","#fff"),cor,0,7.5,-25.7);
+ textPlane(7,2.2,signDraw([{t:"مرحبًا بكم في مدرستنا",s:.38}],"#FFC233","#2B2104",false),cor,0,6,25.7,Math.PI);
+ /* lockers */
+ const lk=[M(0x3C7FC2),M(0x2F6EAD)],vent=M(0x1D4A78);
+ function lockers(side,z0,z1){for(let z=z0,i=0;z<=z1;z+=1.3,i++){const x=side*4.6;mesh(new T.BoxGeometry(.8,4,1.2),lk[i%2],x,2,z,cor);
+  for(let v=0;v<3;v++)mesh(new T.BoxGeometry(.05,.06,.7),vent,x-side*.42,3.4-v*.18,z,cor).castShadow=false;
+  mesh(new T.BoxGeometry(.06,.3,.08),M(0xcccccc),x-side*.42,2.1,z+.4,cor).castShadow=false;}}
+ lockers(-1,-22,-4);lockers(-1,8,22);lockers(1,-22,-16);lockers(1,-8,22);
+ /* classroom doors */
+ function door(side,z,label){const x=side*4.85;mesh(new T.BoxGeometry(.3,5.4,2.8),M(0x8A5A34),x,2.7,z,cor);
+  mesh(new T.BoxGeometry(.32,1.2,1),M(0x9ED6F0),x,3.9,z,cor).castShadow=false;
+  textPlane(2.8,.8,signDraw([{t:label,s:.55}],"#ffffff","#10292E"),cor,side*4.68,6,z,-side*Math.PI/2);}
+ door(-1,2,"الصف الخامس");door(1,-12,"الصف السادس");
+ /* posters */
+ const posters=[[-1,-14,"لا للتنمر","#E8423B"],[-1,15,"كن لطيفًا مع الجميع","#0F7A71"],[1,0,"نحن فريق واحد","#4F7FD1"],[1,14,"الكلمة الطيبة صدقة","#B4559A"]];
+ posters.forEach(([side,z,t,bg])=>textPlane(4.2,2,signDraw([{t,s:.36}],bg,"#fff"),cor,side*4.7,6.3,z,-side*Math.PI/2));
+})();
+
+/* ================= shapes ================= */
 const hs=new T.Shape();hs.moveTo(5,5);hs.bezierCurveTo(5,5,4,0,0,0);hs.bezierCurveTo(-6,0,-6,7,-6,7);hs.bezierCurveTo(-6,11,-3,15.4,5,19);
 hs.bezierCurveTo(12,15.4,16,11,16,7);hs.bezierCurveTo(16,7,16,0,10,0);hs.bezierCurveTo(7,0,5,5,5,5);
 const heartGeo=new T.ExtrudeGeometry(hs,{depth:4,bevelEnabled:true,bevelSize:1,bevelThickness:1,bevelSegments:2});heartGeo.center();heartGeo.rotateZ(Math.PI);heartGeo.scale(.05,.05,.05);
@@ -280,8 +423,8 @@ const starGeo=new T.ExtrudeGeometry(ss,{depth:.3,bevelEnabled:true,bevelSize:.08
 const heartM=M(0xFF5C7A,{emissive:0xFF2F55,emissiveIntensity:.35});
 const starM=M(0xFFC233,{emissive:0xFFAA00,emissiveIntensity:.55,metalness:.3,roughness:.4});
 
-/* ---------- kids ---------- */
-const kids=[];
+/* ================= kids ================= */
+let kids=[];
 const SKINS=[0xF1C9A5,0xD9A27A,0xB57A55,0x8D5A3B],HAIRS=[0x2B1B12,0x4A2E1D,0x111111,0x6B4423];
 function makeKid(o){
  const g=new T.Group();scene.add(g);
@@ -297,53 +440,66 @@ function makeKid(o){
  const mouth=mesh(new T.TorusGeometry(.13,.035,6,12,Math.PI),M(0x7A2230),0,-.18,.47,head);
  const brows=new T.Group();head.add(brows);
  mesh(new T.BoxGeometry(.24,.06,.06),eyeM,-.18,.24,.47,brows).rotation.z=-.45;mesh(new T.BoxGeometry(.24,.06,.06),eyeM,.18,.24,.47,brows).rotation.z=.45;
- if(o.glasses){const gm=M(0x222222);[-.18,.18].forEach(x=>{const r=mesh(new T.TorusGeometry(.13,.025,6,14),gm,x,.06,.5,head);});mesh(new T.BoxGeometry(.12,.03,.03),gm,0,.08,.51,head);}
+ if(o.glasses){const gm=M(0x222222);[-.18,.18].forEach(x=>mesh(new T.TorusGeometry(.13,.025,6,14),gm,x,.06,.5,head));mesh(new T.BoxGeometry(.12,.03,.03),gm,0,.08,.51,head);}
  if(o.phone)mesh(new T.BoxGeometry(.28,.46,.06),M(0x1E1E2A,{emissive:0x3366ff,emissiveIntensity:.4}),0,-.9,.12,arms[1]);
  g.scale.setScalar(o.scale||1);
- const k={g,head,mouth,brows,shirt,legs,arms,face:0,faceT:0,target:null,speed:3.2,jumpUntil:0,phone:o.phone,wander:o.wander,mood:"happy",phase:rnd()*6};
+ const k={g,head,mouth,brows,shirt,legs,arms,face:o.face||0,faceT:o.face||0,target:null,speed:3.4,jumpUntil:0,phone:o.phone,wander:o.wander,mood:"happy",phase:rnd()*6};
  k.setMood=m=>{k.mood=m;mouth.rotation.z=m==="sad"?0:Math.PI;brows.visible=m==="angry";head.rotation.x=m==="sad"?.28:0;};
  k.setMood(o.mood||"happy");g.position.set(o.x||0,0,o.z||0);kids.push(k);return k;
 }
-const pickSkin=()=>SKINS[Math.floor(rnd()*SKINS.length)],pickHair=()=>HAIRS[Math.floor(rnd()*HAIRS.length)];
+const pick=a=>a[Math.floor(rnd()*a.length)];
 const FRIENDLY=[0x4FA3E3,0x58C27D,0xF08BB4,0xB487E8,0x3FC1B5,0xF3A04B];
 
 /* player */
 const player=makeKid({skin:0xE7B58C,hair:0x2B1B12,shirt:0xFFC233,pants:0x1F5C8C,scale:1.12});
-const halo=mesh(new T.RingGeometry(1.1,1.45,40),new T.MeshBasicMaterial({color:0xFFC233,transparent:true,opacity:.8}),0,.06,0);halo.rotation.x=-Math.PI/2;halo.castShadow=false;
+const halo=flatMesh(new T.RingGeometry(1.1,1.45,40),new T.MeshBasicMaterial({color:0xFFC233,transparent:true,opacity:.8}),0,.06,0);
 const cape=mesh(new T.PlaneGeometry(1.1,1.5),M(0x0F7A71,{side:T.DoubleSide}),0,1.45,-.55,player.g);cape.rotation.x=.18;
 const arrow=mesh(new T.ConeGeometry(.45,1.2,4),M(0xFFC233,{emissive:0xFFAA00,emissiveIntensity:.6}),0,.5,0);arrow.castShadow=false;
-const tapRing=mesh(new T.RingGeometry(.5,.75,32),new T.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0}),0,.07,0);tapRing.rotation.x=-Math.PI/2;tapRing.castShadow=false;
-player.g.position.set(0,0,10);
+const tapRing=flatMesh(new T.RingGeometry(.5,.75,32),new T.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0}),0,.07,0);
 
-/* missions in the world */
-MISSIONS.forEach((m,mi)=>{
- const [x,z]=m.at;m.center=new T.Vector3(x,0,z);m.solved=false;m.armed=true;m.tries=0;
- m.victim=makeKid({x,z,skin:pickSkin(),hair:pickHair(),shirt:FRIENDLY[mi],mood:"sad",glasses:mi===0});
- m.victim.face=m.victim.faceT=0;
- m.bulliesK=[];
- const spots=m.bullies===1?[[1.9,.7]]:[[-1.9,1.1],[1.9,1.1]];
- spots.slice(0,m.bullies).forEach(([dx,dz])=>{const b=makeKid({x:x+dx,z:z+dz,skin:pickSkin(),hair:pickHair(),shirt:0x5B2A34,pants:0x222831,mood:"angry",scale:m.big?1.35:1,phone:m.phone});
-  b.face=b.faceT=Math.atan2(-dx,-dz);if(m.phone){b.arms[1].rotation.x=-1.1;}m.bulliesK.push(b);});
- /* rain cloud */
- const cl=new T.Group();cl.position.set(x,4.3,z);scene.add(cl);
- [[-.5,0],[.4,.1],[0,.3]].forEach(([a,b])=>{const c=new T.Mesh(new T.IcosahedronGeometry(.7,0),M(0x6B7480));c.position.set(a,b,0);cl.add(c);});
- cl.drops=[];for(let i=0;i<5;i++){const d=new T.Mesh(new T.BoxGeometry(.05,.3,.05),new T.MeshBasicMaterial({color:0x7FB6E8}));d.position.set(-.7+i*.35,-.5-rnd(),0);cl.add(d);cl.drops.push(d);}
- m.cloud=cl;
- /* warning marker */
- const mk=new T.Group();mk.position.set(x,7,z);scene.add(mk);
- const red=M(0xE8423B,{emissive:0xE8423B,emissiveIntensity:.6});
- mesh(new T.CylinderGeometry(.22,.12,1,8),red,0,.3,0,mk);mesh(new T.SphereGeometry(.2,10,8),red,0,-.5,0,mk);
- m.marker=mk;
- const ring=mesh(new T.RingGeometry(3.6,4.1,48),new T.MeshBasicMaterial({color:0xE8423B,transparent:true,opacity:.6}),x,.08,z);ring.rotation.x=-Math.PI/2;ring.castShadow=false;m.ring=ring;
-});
+/* people in the corridor */
+makeKid({x:CX-3,z:CZ+6,skin:pick(SKINS),hair:pick(HAIRS),shirt:FRIENDLY[0],face:Math.PI/2});
+makeKid({x:CX+3,z:CZ+3,skin:pick(SKINS),hair:pick(HAIRS),shirt:FRIENDLY[2],face:-Math.PI/2});
+makeKid({x:CX-3,z:CZ-8,skin:pick(SKINS),hair:pick(HAIRS),shirt:FRIENDLY[4],face:Math.PI/2});
+makeKid({x:CX+2.6,z:CZ-19,skin:0xD9A27A,hair:0x111111,shirt:0xFFFFFF,pants:0x555E66,scale:1.35,face:0});
+/* wandering happy kids in the yard */
+for(let i=0;i<9;i++)makeKid({x:-60+i*15,z:10+rnd()*40,skin:pick(SKINS),hair:pick(HAIRS),shirt:FRIENDLY[i%6],wander:1});
 
-/* wandering happy kids */
-for(let i=0;i<5;i++)makeKid({x:-20+i*10,z:28-rnd()*10,skin:pickSkin(),hair:pickHair(),shirt:FRIENDLY[i%6],wander:1});
+/* ================= level building ================= */
+let missions=[],stars=[];
+function clearLevel(){
+ missions.forEach(m=>{m.objs.forEach(o=>scene.remove(o));kids=kids.filter(k=>!m.kids.includes(k));});
+ stars.forEach(s=>scene.remove(s));missions=[];stars=[];}
+function buildLevel(li){
+ clearLevel();const L=LEVELS[li];
+ L.missions.forEach((d,mi)=>{
+  const m=Object.assign({},d);const [x,z]=m.at;m.idx=mi;m.center=new T.Vector3(x,0,z);m.solved=false;m.armed=true;m.tries=0;m.objs=[];m.kids=[];
+  m.victim=makeKid({x,z,skin:pick(SKINS),hair:pick(HAIRS),shirt:FRIENDLY[(mi+li)%6],mood:"sad",glasses:m.glasses});m.kids.push(m.victim);
+  m.bulliesK=[];
+  const spots=m.bullies===1?[[1.9,.7]]:[[-1.9,1.1],[1.9,1.1]];
+  spots.slice(0,m.bullies).forEach(([dx,dz])=>{const b=makeKid({x:x+dx,z:z+dz,skin:pick(SKINS),hair:pick(HAIRS),shirt:0x5B2A34,pants:0x222831,mood:"angry",scale:m.big?1.35:1,phone:m.phone,face:Math.atan2(-dx,-dz)});
+   if(m.phone)b.arms[1].rotation.x=-1.1;m.bulliesK.push(b);m.kids.push(b);});
+  const cl=new T.Group();cl.position.set(x,4.3,z);scene.add(cl);m.objs.push(cl);
+  [[-.5,0],[.4,.1],[0,.3]].forEach(([a,b])=>{const c=new T.Mesh(new T.IcosahedronGeometry(.7,0),M(0x6B7480));c.position.set(a,b,0);cl.add(c);});
+  cl.drops=[];for(let i=0;i<5;i++){const dr=new T.Mesh(new T.BoxGeometry(.05,.3,.05),new T.MeshBasicMaterial({color:0x7FB6E8}));dr.position.set(-.7+i*.35,-.5-rnd(),0);cl.add(dr);cl.drops.push(dr);}
+  m.cloud=cl;
+  const mk=new T.Group();mk.position.set(x,7,z);scene.add(mk);m.objs.push(mk);
+  const red=M(0xE8423B,{emissive:0xE8423B,emissiveIntensity:.6});
+  mesh(new T.CylinderGeometry(.22,.12,1,8),red,0,.3,0,mk);mesh(new T.SphereGeometry(.2,10,8),red,0,-.5,0,mk);
+  m.marker=mk;
+  const ring=flatMesh(new T.RingGeometry(3.6,4.1,48),new T.MeshBasicMaterial({color:0xE8423B,transparent:true,opacity:.6}),x,.08,z);m.ring=ring;m.objs.push(ring);
+  m.kids.forEach(k=>m.objs.push(k.g));
+  missions.push(m);
+ });
+ const ms=L.missions.map(m=>m.at),placed=[];
+ for(let tries=0;placed.length<L.stars&&tries<2000;tries++){const x=-90+rnd()*180,z=-34+rnd()*126;
+  if(nearAny(x,z,ms,9)||nearAny(x,z,treeSpots,5)||nearAny(x,z,placed,16)||(Math.abs(x)<5&&z<-28))continue;placed.push([x,z]);}
+ stars=placed.map(([x,z],i)=>{const s=mesh(starGeo,starM,x,1.8,z);s.word=WORDS[(i+li*4)%WORDS.length];s.got=false;return s;});
+ S.solved=0;S.stars=0;S.starTotal=stars.length;S.levelDone=false;
+ $("hStarT").textContent=S.starTotal;$("hLvl").textContent=li+1;hud();
+}
 
-/* stars */
-const stars=STARS_AT.map(([x,z],i)=>{const s=mesh(starGeo,starM,x,1.8,z);s.word=WORDS[i];s.got=false;return s;});
-
-/* ---------- particles ---------- */
+/* ================= particles ================= */
 const parts=[];
 const sparkGeo=new T.OctahedronGeometry(.15,0);
 function burst(pos,kind,n){for(let i=0;i<n;i++){
@@ -355,39 +511,51 @@ function confettiRain(){const cols=[0xFFC233,0xFF5C7A,0x4FA3E3,0x58C27D,0xB487E8
  for(let i=0;i<260;i++){const m=new T.Mesh(new T.PlaneGeometry(.35,.22),new T.MeshBasicMaterial({color:cols[i%6],side:T.DoubleSide}));
   m.position.set(player.g.position.x+(rnd()-.5)*40,14+rnd()*20,player.g.position.z+(rnd()-.5)*40);scene.add(m);confetti.push({m,s:1.5+rnd()*2,r:rnd()*5});}}
 
-/* ---------- sound ---------- */
+/* ================= sound ================= */
 let AC=null,soundOn=true;
 function tone(f,d,type="sine",v=.13,delay=0){if(!AC||!soundOn)return;const o=AC.createOscillator(),g=AC.createGain(),t=AC.currentTime+delay;
  o.type=type;o.frequency.value=f;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.02);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g).connect(AC.destination);o.start(t);o.stop(t+d+.05);}
 const sfx={star(){tone(988,.18);tone(1480,.3,"sine",.1,.08);},good(){[523,659,784,1046].forEach((f,i)=>tone(f,.45,"triangle",.12,i*.11));},
- bad(){tone(196,.4,"sawtooth",.05);},win(){[523,659,784,1046,784,1046,1318].forEach((f,i)=>tone(f,.5,"triangle",.12,i*.14));}};
+ bad(){tone(196,.4,"sawtooth",.05);},door(){[392,523,659].forEach((f,i)=>tone(f,.35,"sine",.1,i*.08));},
+ win(){[523,659,784,1046,784,1046,1318].forEach((f,i)=>tone(f,.5,"triangle",.12,i*.14));}};
 
-/* ---------- state & HUD ---------- */
-const S={mode:"intro",score:0,solved:0,stars:0,paused:false,name:"",target:null,keys:{}};
+/* ================= state & HUD ================= */
+const S={mode:"intro",level:0,score:0,solved:0,stars:0,starTotal:8,paused:false,name:"",target:null,keys:{},levelDone:false};
 function hud(){$("hScore").textContent=S.score;$("hMis").textContent=S.solved;$("hStar").textContent=S.stars;
- $("hMeter").style.width=Math.round((S.solved*20+S.stars*5)/140*100)+"%";}
-function toast(txt){const d=document.createElement("div");d.className="toast";d.textContent=txt;const box=$("toastBox");box.innerHTML="";box.appendChild(d);setTimeout(()=>{if(d.parentNode)d.remove();},1900);}
+ $("hMeter").style.width=Math.round(kindness()*100)+"%";}
+function kindness(){return (S.solved*20+S.stars*5)/LEVEL_MAX[S.level];}
+function toast(txt){const d=document.createElement("div");d.className="toast";d.textContent=txt;const box=$("toastBox");box.innerHTML="";box.appendChild(d);setTimeout(()=>{if(d.parentNode)d.remove();},2400);}
 function fullscreen(){const el=document.documentElement;try{const p=document.fullscreenElement?document.exitFullscreen():(el.requestFullscreen||el.webkitRequestFullscreen||(()=>{})).call(el);if(p&&p.catch)p.catch(()=>{});}catch(e){}}
 $("fs").onclick=fullscreen;$("fs2").onclick=fullscreen;
 $("snd").onclick=()=>{soundOn=!soundOn;$("snd").textContent="الصوت: "+(soundOn?"يعمل":"متوقف");};
-$("go").onclick=()=>{
- S.name=$("nm").value.trim()||"بطل الصداقة";
- try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}
- $("startL").hidden=true;$("hud").hidden=false;$("hint").hidden=false;$("pad").hidden=false;S.mode="play";hud();toast("اذهب إلى أول دائرة حمراء!");
-};
 $("again").onclick=()=>location.reload();
 $("restart").onclick=()=>location.reload();
-/* on-screen D-pad: hold a button to keep walking */
+function clearPad(){S.keys={};document.querySelectorAll("#pad button").forEach(b=>b.classList.remove("on"));}
 document.querySelectorAll("#pad button").forEach(b=>{const k=b.dataset.k;
- const on=e=>{e.preventDefault();if(S.mode!=="play"||S.paused)return;S.keys[k]=1;S.target=null;b.classList.add("on");try{b.setPointerCapture(e.pointerId);}catch(_){}};
+ const on=e=>{e.preventDefault();if(!canMove())return;S.keys[k]=1;S.target=null;b.classList.add("on");try{b.setPointerCapture(e.pointerId);}catch(_){}};
  const off=()=>{S.keys[k]=0;b.classList.remove("on");};
  b.addEventListener("pointerdown",on);["pointerup","pointercancel","lostpointercapture"].forEach(ev=>b.addEventListener(ev,off));
  b.addEventListener("contextmenu",e=>e.preventDefault());});
+const canMove=()=>(S.mode==="play"||S.mode==="corridor")&&!S.paused;
 
-/* ---------- mission dialog ---------- */
+$("go").onclick=()=>{
+ S.name=$("nm").value.trim()||"بطل الصداقة";
+ try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}
+ $("startL").hidden=true;$("hud").hidden=false;$("pad").hidden=false;$("hint").hidden=false;setTimeout(()=>$("hint").hidden=true,15000);
+ S.mode="corridor";player.g.position.set(CX,0,CZ+13);player.face=player.faceT=Math.PI;
+ camera.position.set(CX,7.6,CZ+25);buildLevel(0);
+ toast("أنت في ممر مدرسة IPS. امشِ إلى الباب الأخضر لتخرج إلى الساحة.");
+};
+function goYard(){
+ S.mode="fade";clearPad();sfx.door();$("fade").classList.add("on");
+ setTimeout(()=>{player.g.position.set(0,0,-38);player.face=player.faceT=0;camera.position.set(0,15,-21);S.mode="play";S.target=null;
+  $("map").hidden=false;$("fade").classList.remove("on");toast("المستوى 1: أصلح 5 مواقف واجمع "+S.starTotal+" نجوم. الخريطة في الأسفل.");},600);
+}
+
+/* ================= mission dialog ================= */
 let cur=null;
-function openMission(m){cur=m;S.paused=true;S.target=null;S.keys={};document.querySelectorAll("#pad button").forEach(b=>b.classList.remove("on"));
- $("dN").textContent=m.n;$("dQ").textContent=m.q;$("dF").innerHTML="";$("dGo").hidden=true;$("dX").hidden=false;
+function openMission(m){cur=m;S.paused=true;S.target=null;clearPad();
+ $("dN").textContent=`المستوى ${S.level+1} · الموقف ${m.idx+1} · ${m.n}`;$("dQ").textContent=m.q;$("dF").innerHTML="";$("dGo").hidden=true;$("dX").hidden=false;
  const opts=m.o.slice().sort(()=>rnd()-.5);
  $("dO").innerHTML="";opts.forEach(o=>{const b=document.createElement("button");b.className="opt";b.textContent=o.t;$("dO").appendChild(b);
   b.onclick=()=>{
@@ -408,30 +576,68 @@ function solve(m){m.solved=true;S.solved++;S.score+=m.pts;hud();sfx.good();
  m.bulliesK.forEach((b,i)=>{b.setMood("happy");b.shirt.color.set(FRIENDLY[(i+3)%6]);b.arms[1].rotation.x=0;
   b.target=new T.Vector3(m.center.x+(i===0?-1.5:1.5),0,m.center.z);b.after=()=>{b.faceT=0;b.jumpUntil=clock.elapsedTime+2.5;};});
  m.ring.material.color.set(0x3DD68C);
- scene.remove(m.marker);const h=mesh(heartGeo,heartM,m.center.x,7,m.center.z);h.scale.setScalar(2.2);m.marker=h;scene.add(h);
+ scene.remove(m.marker);const h=mesh(heartGeo,heartM,m.center.x,7,m.center.z);h.scale.setScalar(2.2);m.marker=h;m.objs.push(h);
  burst(new T.Vector3(m.center.x,2.5,m.center.z),"heart",26);burst(new T.Vector3(m.center.x,2.5,m.center.z),"spark",30);
- toast(S.solved<5?`أُصلح الموقف! بقي ${5-S.solved}`:"أشرقت المدرسة كلها!");
- if(S.solved===5)setTimeout(finale,1800);
+ if(S.solved<5)toast(`أُصلح الموقف! بقي ${5-S.solved}`);
+ else if(S.stars<S.starTotal)toast(`أصلحت كل المواقف! اجمع ${S.starTotal-S.stars} نجوم باقية لتفتح المستوى التالي.`);
+ checkLevel();
 }
-function finale(){S.mode="finale";sfx.win();confettiRain();$("hint").hidden=true;$("pad").hidden=true;
+function checkLevel(){
+ if(S.solved===5&&S.stars===S.starTotal&&!S.levelDone){S.levelDone=true;
+  setTimeout(S.level<LEVELS.length-1?levelUp:finale,1800);}
+}
+function levelUp(){S.paused=true;clearPad();sfx.win();burst(player.g.position.clone().setY(3),"spark",50);
+ const n=S.level+1,next=LEVELS[n];
+ $("lT").textContent=`أنهيت المستوى ${n}!`;
+ $("lS").innerHTML="";[`5 مواقف`,`${S.starTotal} نجوم`,`${S.score} نقطة`].forEach(t=>{const s=document.createElement("span");s.textContent=t;$("lS").appendChild(s);});
+ $("lP").textContent=`في المستوى ${n+1} ظهرت مواقف تنمر جديدة في أماكن أبعد، ومعها ${next.stars} نجمة. استخدم الخريطة لتجدها.`;
+ $("lGo").textContent=`ابدأ المستوى ${n+1}`;$("lvlL").hidden=false;$("lGo").focus();
+}
+$("lGo").onclick=()=>{$("lvlL").hidden=true;S.level++;buildLevel(S.level);
+ player.g.position.set(0,0,-38);player.face=player.faceT=0;S.target=null;S.paused=false;
+ toast(`المستوى ${S.level+1}: ظهر تنمر جديد في الساحة!`);};
+function finale(){S.mode="finale";sfx.win();confettiRain();$("hint").hidden=true;$("pad").hidden=true;$("map").hidden=true;clearPad();
  kids.forEach(k=>{k.setMood("happy");k.jumpUntil=clock.elapsedTime+9;});
- setTimeout(()=>{const pct=S.score/140;
-  $("cName").textContent=S.name;$("cScore").textContent=S.score;
+ setTimeout(()=>{const pct=S.score/TOTAL_MAX;
+  $("cName").textContent=S.name;$("cScore").textContent=S.score;$("cMax").textContent=TOTAL_MAX;
   $("cRank").textContent=pct>=.85?"سفير ذهبي ضد التنمر":pct>=.6?"سفير فضي ضد التنمر":"سفير ضد التنمر";
   $("certL").hidden=false;$("again").focus();},3200);}
 
-/* ---------- input ---------- */
+/* ================= input ================= */
 const ray=new T.Raycaster(),ndc=new T.Vector2();
-function setTarget(e){if(S.mode!=="play"||S.paused)return;const r=canvas.getBoundingClientRect();
+const floorPlane=new T.Plane(new T.Vector3(0,1,0),0),hitP=new T.Vector3();
+function setTarget(e){if(!canMove())return;const r=canvas.getBoundingClientRect();
  ndc.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(ndc,camera);
- const hit=ray.intersectObject(ground)[0];if(hit){S.target=hit.point.clone();S.target.y=0;tapRing.position.set(hit.point.x,.07,hit.point.z);tapRing.material.opacity=.9;}}
-canvas.addEventListener("pointerdown",e=>{setTarget(e);canvas.setPointerCapture&&canvas.setPointerCapture(e.pointerId);});
+ if(ray.ray.intersectPlane(floorPlane,hitP)){S.target=hitP.clone();tapRing.position.set(hitP.x,.07,hitP.z);tapRing.material.opacity=.9;}}
+canvas.addEventListener("pointerdown",e=>{setTarget(e);try{canvas.setPointerCapture(e.pointerId);}catch(_){}});
 canvas.addEventListener("pointermove",e=>{if(e.buttons)setTarget(e);});
 const KEYS={ArrowUp:"u",KeyW:"u",ArrowDown:"d",KeyS:"d",ArrowLeft:"l",KeyA:"l",ArrowRight:"r",KeyD:"r"};
-addEventListener("keydown",e=>{const k=KEYS[e.code];if(k&&S.mode==="play"&&!S.paused){S.keys[k]=1;S.target=null;e.preventDefault();}});
+addEventListener("keydown",e=>{const k=KEYS[e.code];if(k&&canMove()){S.keys[k]=1;S.target=null;e.preventDefault();}});
 addEventListener("keyup",e=>{const k=KEYS[e.code];if(k)S.keys[k]=0;});
 
-/* ---------- loop ---------- */
+/* ================= minimap ================= */
+const mm=$("mm"),mx=mm.getContext("2d");
+const MW=mm.width,MH=mm.height;
+const mpx=x=>(x-MAPR.x0)/(MAPR.x1-MAPR.x0)*MW,mpz=z=>(z-MAPR.z0)/(MAPR.z1-MAPR.z0)*MH;
+function drawMap(t){
+ mx.fillStyle="#79C16A";mx.fillRect(0,0,MW,MH);
+ mx.strokeStyle="#E9E2D0";mx.lineWidth=3;mx.strokeRect(mpx(-100),mpz(-44),mpx(100)-mpx(-100),mpz(100)-mpz(-44));
+ mx.fillStyle="#C4563E";mx.fillRect(mpx(-32),mpz(-56),mpx(32)-mpx(-32),mpz(-44)-mpz(-56));
+ mx.fillStyle="#fff";mx.font="800 18px Tajawal, sans-serif";mx.textAlign="center";mx.textBaseline="middle";mx.direction="rtl";mx.fillText("المدرسة",mpx(0),mpz(-50));
+ mx.fillStyle="#E59A57";mx.fillRect(mpx(-11),mpz(1),mpx(11)-mpx(-11),mpz(15)-mpz(1));
+ mx.fillStyle="#5FAE57";mx.fillRect(mpx(-18),mpz(35),mpx(18)-mpx(-18),mpz(57)-mpz(35));
+ mx.fillStyle="#3E9B4F";treeSpots.forEach(([x,z])=>{mx.beginPath();mx.arc(mpx(x),mpz(z),4,0,7);mx.fill();});
+ stars.forEach(s=>{if(s.got)return;mx.fillStyle="#FFC233";mx.strokeStyle="#8A6500";mx.lineWidth=1.5;mx.beginPath();
+  for(let i=0;i<10;i++){const a=i/10*Math.PI*2-Math.PI/2,r=i%2?3:7;const px=mpx(s.position.x)+Math.cos(a)*r,py=mpz(s.position.z)+Math.sin(a)*r;i?mx.lineTo(px,py):mx.moveTo(px,py);}mx.closePath();mx.fill();mx.stroke();});
+ missions.forEach(m=>{const px=mpx(m.center.x),py=mpz(m.center.z),pulse=m.solved?0:Math.abs(Math.sin(t*3))*4;
+  mx.fillStyle=m.solved?"#1F8A4C":"#E8423B";mx.beginPath();mx.arc(px,py,11+pulse,0,7);mx.fill();
+  mx.fillStyle="#fff";mx.font="800 15px Tajawal, sans-serif";mx.fillText(m.solved?"✓":String(m.idx+1),px,py+1);});
+ const p=player.g.position,a=player.face;const px=mpx(Math.max(-100,Math.min(100,p.x))),py=mpz(Math.max(-56,Math.min(100,p.z)));
+ mx.save();mx.translate(px,py);mx.rotate(-a+Math.PI);mx.fillStyle="#FFC233";mx.strokeStyle="#10292E";mx.lineWidth=2.5;
+ mx.beginPath();mx.moveTo(0,-12);mx.lineTo(9,9);mx.lineTo(0,4);mx.lineTo(-9,9);mx.closePath();mx.fill();mx.stroke();mx.restore();
+}
+
+/* ================= loop ================= */
 function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
 addEventListener("resize",resize);resize();
 const clock=new T.Clock();const tmp=new T.Vector3(),camGoal=new T.Vector3();
@@ -441,64 +647,70 @@ function animKid(k,dt,t,moving){
  k.legs[0].rotation.x=sw;k.legs[1].rotation.x=-sw;k.arms[0].rotation.x=-sw*.8;if(!k.phone||k.mood!=="angry")k.arms[1].rotation.x=sw*.8;
  k.face+=angDiff(k.face,k.faceT)*Math.min(1,dt*10);k.g.rotation.y=k.face;
  if(t<k.jumpUntil){k.g.position.y=Math.abs(Math.sin(t*8+k.phase))*.7;k.arms[0].rotation.z=-2.4;k.arms[1].rotation.z=2.4;}
- else{k.g.position.y=moving?Math.abs(Math.sin(t*11+k.phase))*.08:Math.sin(t*2+k.phase)*.03;k.arms[0].rotation.z=0;k.arms[1].rotation.z=0;
-  if(k.mood==="angry"){k.arms[0].rotation.z=.5;}}
+ else{k.g.position.y=moving?Math.abs(Math.sin(t*11+k.phase))*.08:Math.sin(t*2+k.phase)*.03;k.arms[0].rotation.z=k.mood==="angry"?.5:0;k.arms[1].rotation.z=0;}
 }
+let frame=0;
 function tick(){
- const dt=Math.min(clock.getDelta(),.05),t=clock.elapsedTime;
- /* sky brightens with kindness */
- const kind=(S.solved*20+S.stars*5)/140;
+ const dt=Math.min(clock.getDelta(),.05),t=clock.elapsedTime;frame++;
+ const kind=S.mode==="intro"?.35:kindness();
  scene.background.copy(SKY0).lerp(SKY1,kind);scene.fog.color.copy(scene.background);
  hemi.intensity=.55+kind*.35;sun.intensity=.75+kind*.45;
- skyClouds.forEach((c,i)=>{c.position.x+=dt*(.6+i%3*.3);if(c.position.x>110)c.position.x=-110;});
+ skyClouds.forEach((c,i)=>{c.position.x+=dt*(.6+i%3*.3);if(c.position.x>160)c.position.x=-160;});
  flag.rotation.y=Math.sin(t*2)*.15;
 
- /* player */
- let moving=false;
- if(S.mode==="play"&&!S.paused){
+ /* player movement */
+ const p=player.g.position;let moving=false;
+ if(canMove()){
   tmp.set((S.keys.r||0)-(S.keys.l||0),0,(S.keys.d||0)-(S.keys.u||0));
-  if(tmp.lengthSq()===0&&S.target){tmp.subVectors(S.target,player.g.position);tmp.y=0;if(tmp.length()<.3){S.target=null;tmp.set(0,0,0);}}
-  if(tmp.lengthSq()>0){tmp.normalize();player.faceT=Math.atan2(tmp.x,tmp.z);tmp.multiplyScalar(10*dt);
-   const p=player.g.position;p.x=Math.max(-60,Math.min(60,p.x+tmp.x));p.z=Math.max(-40,Math.min(55,p.z+tmp.z));moving=true;}
-  /* missions proximity */
-  MISSIONS.forEach(m=>{if(m.solved)return;const d=Math.hypot(player.g.position.x-m.center.x,player.g.position.z-m.center.z);
-   if(d<4.3&&m.armed&&!S.paused)openMission(m);if(d>6.5)m.armed=true;});
-  /* stars */
-  stars.forEach(s=>{if(s.got)return;if(Math.hypot(player.g.position.x-s.position.x,player.g.position.z-s.position.z)<1.9){
-   s.got=true;scene.remove(s);S.stars++;S.score+=5;hud();sfx.star();toast("«"+s.word+"» +5");burst(s.position.clone(),"spark",22);}});
+  if(tmp.lengthSq()===0&&S.target){tmp.subVectors(S.target,p);tmp.y=0;if(tmp.length()<.3){S.target=null;tmp.set(0,0,0);}}
+  if(tmp.lengthSq()>0){tmp.normalize();player.faceT=Math.atan2(tmp.x,tmp.z);tmp.multiplyScalar((S.mode==="corridor"?8:13)*dt);
+   p.x+=tmp.x;p.z+=tmp.z;moving=true;
+   if(S.mode==="corridor"){p.x=Math.max(CX-3.8,Math.min(CX+3.8,p.x));p.z=Math.max(CZ-25,Math.min(CZ+24,p.z));}
+   else{p.x=Math.max(BOUNDS.x0,Math.min(BOUNDS.x1,p.x));p.z=Math.max(BOUNDS.z0,Math.min(BOUNDS.z1,p.z));}}
+  if(S.mode==="corridor"&&p.z<CZ-22.5&&Math.abs(p.x-CX)<2.6)goYard();
+  if(S.mode==="play"){
+   missions.forEach(m=>{if(m.solved)return;const d=Math.hypot(p.x-m.center.x,p.z-m.center.z);
+    if(d<4.3&&m.armed&&!S.paused)openMission(m);if(d>6.5)m.armed=true;});
+   stars.forEach(s=>{if(s.got)return;if(Math.hypot(p.x-s.position.x,p.z-s.position.z)<2){
+    s.got=true;scene.remove(s);S.stars++;S.score+=5;hud();sfx.star();toast("«"+s.word+"» +5");burst(s.position.clone(),"spark",22);checkLevel();}});
+  }
  }
  animKid(player,dt,t,moving);
- halo.position.set(player.g.position.x,.06,player.g.position.z);halo.material.opacity=.55+Math.sin(t*4)*.25;
+ halo.position.set(p.x,.06,p.z);halo.material.opacity=.55+Math.sin(t*4)*.25;
  tapRing.material.opacity=Math.max(0,tapRing.material.opacity-dt*1.2);
- /* guide arrow to nearest unsolved mission */
- let best=null,bd=1e9;MISSIONS.forEach(m=>{if(m.solved)return;const d=player.g.position.distanceTo(m.center);if(d<bd){bd=d;best=m;}});
- arrow.visible=S.mode==="play"&&!!best&&bd>6;
- if(best){const a=Math.atan2(best.center.x-player.g.position.x,best.center.z-player.g.position.z);
-  arrow.position.set(player.g.position.x+Math.sin(a)*2.3,.5,player.g.position.z+Math.cos(a)*2.3);arrow.rotation.set(0,a,0);arrow.rotateX(Math.PI/2);}
+ sun.position.set(p.x+30,55,p.z+25);sun.target.position.set(p.x,0,p.z);
+
+ /* guide arrow: door in the corridor, else nearest mission, else nearest star */
+ let goal=null;
+ if(S.mode==="corridor")goal=new T.Vector3(CX,0,CZ-25);
+ else if(S.mode==="play"){let bd=1e9;missions.forEach(m=>{if(m.solved)return;const d=p.distanceTo(m.center);if(d<bd){bd=d;goal=m.center;}});
+  if(!goal)stars.forEach(s=>{if(s.got)return;const d=Math.hypot(p.x-s.position.x,p.z-s.position.z);if(d<bd){bd=d;goal=s.position;}});}
+ arrow.visible=!!goal&&!S.paused&&Math.hypot(goal?goal.x-p.x:0,goal?goal.z-p.z:0)>5;
+ if(goal){const a=Math.atan2(goal.x-p.x,goal.z-p.z);arrow.position.set(p.x+Math.sin(a)*2.3,.5,p.z+Math.cos(a)*2.3);arrow.rotation.set(0,a,0);arrow.rotateX(Math.PI/2);}
 
  /* other kids */
  kids.forEach(k=>{if(k===player)return;let mv=false;
-  if(k.wander&&!k.target&&rnd()<.01)k.target=new T.Vector3((rnd()-.5)*70,0,(rnd()-.3)*60);
+  if(k.wander&&!k.target&&rnd()<.01)k.target=new T.Vector3((rnd()-.5)*160,0,-30+rnd()*120);
   if(k.target){tmp.subVectors(k.target,k.g.position);tmp.y=0;const d=tmp.length();
    if(d<.15){k.target=null;if(k.after){k.after();k.after=null;}}else{tmp.normalize();k.faceT=Math.atan2(tmp.x,tmp.z);k.g.position.addScaledVector(tmp,Math.min(d,k.speed*dt));mv=true;}}
   animKid(k,dt,t,mv);});
- /* mission props */
- MISSIONS.forEach(m=>{
+ missions.forEach(m=>{
   m.marker.rotation.y+=dt*2;m.marker.position.y=7+Math.sin(t*3)*.3;
   m.ring.material.opacity=m.solved?.5:.35+Math.abs(Math.sin(t*3))*.4;
   if(m.solved){m.cloud.scale.multiplyScalar(Math.max(0,1-dt*3));if(m.cloud.scale.x<.02)m.cloud.visible=false;}
-  else{m.cloud.position.y=4.3+Math.sin(t*1.5)*.1;m.cloud.drops.forEach((d,i)=>{d.position.y-=dt*2.5;if(d.position.y<-2.2)d.position.y=-.4;});}
+  else{m.cloud.position.y=4.3+Math.sin(t*1.5)*.1;m.cloud.drops.forEach(d=>{d.position.y-=dt*2.5;if(d.position.y<-2.2)d.position.y=-.4;});}
  });
  stars.forEach((s,i)=>{if(!s.got){s.rotation.y+=dt*2.2;s.position.y=1.8+Math.sin(t*2.5+i)*.3;}});
- /* particles */
- for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.v.y-=p.g*dt;p.m.position.addScaledVector(p.v,dt);p.m.rotation.y+=p.spin*dt;p.life-=dt;
-  p.m.scale.setScalar(Math.max(.01,Math.min(1,p.life)));if(p.life<=0){scene.remove(p.m);parts.splice(i,1);}}
+ for(let i=parts.length-1;i>=0;i--){const q=parts[i];q.v.y-=q.g*dt;q.m.position.addScaledVector(q.v,dt);q.m.rotation.y+=q.spin*dt;q.life-=dt;
+  q.m.scale.setScalar(Math.max(.01,Math.min(1,q.life)));if(q.life<=0){scene.remove(q.m);parts.splice(i,1);}}
  confetti.forEach(c=>{c.m.position.y-=c.s*dt;c.m.rotation.x+=c.r*dt;c.m.rotation.y+=c.r*.7*dt;if(c.m.position.y<0)c.m.position.y=18+rnd()*10;});
 
  /* camera */
- if(S.mode==="intro"){const a=t*.12;camera.position.set(Math.sin(a)*58,28,Math.cos(a)*58);camera.lookAt(0,2,-5);}
- else if(S.mode==="finale"){const a=t*.35,p=player.g.position;camGoal.set(p.x+Math.sin(a)*16,9,p.z+Math.cos(a)*16);camera.position.lerp(camGoal,1-Math.exp(-dt*2));camera.lookAt(p.x,2,p.z);}
- else{const p=player.g.position;const wide=camera.aspect<1?1.35:1;camGoal.set(p.x,15*wide,p.z+17*wide);camera.position.lerp(camGoal,1-Math.exp(-dt*4));camera.lookAt(p.x,1.5,p.z-2);}
+ if(S.mode==="intro"){const a=t*.1;camera.position.set(Math.sin(a)*105,46,30+Math.cos(a)*105);camera.lookAt(0,2,20);}
+ else if(S.mode==="corridor"||(S.mode==="fade"&&p.x>200)){camGoal.set(CX+(p.x-CX)*.5,7.6,Math.min(p.z+12,CZ+25.4));camera.position.lerp(camGoal,1-Math.exp(-dt*5));camera.lookAt(p.x,2.4,p.z-9);}
+ else if(S.mode==="finale"){const a=t*.35;camGoal.set(p.x+Math.sin(a)*16,9,p.z+Math.cos(a)*16);camera.position.lerp(camGoal,1-Math.exp(-dt*2));camera.lookAt(p.x,2,p.z);}
+ else{const wide=camera.aspect<1?1.35:1;camGoal.set(p.x,15*wide,p.z+17*wide);camera.position.lerp(camGoal,1-Math.exp(-dt*4));camera.lookAt(p.x,1.5,p.z-2);}
+ if(!$("map").hidden&&frame%2===0)drawMap(t);
  renderer.render(scene,camera);requestAnimationFrame(tick);
 }
 tick();
