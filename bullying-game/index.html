@@ -75,9 +75,9 @@ p{margin:0}
 .eyebrow{font-size:.9rem;font-weight:800;letter-spacing:.02em;color:var(--brand)}
 .muted{color:var(--muted)}
 
-.title{font-size:clamp(3rem,10vw,6rem);font-weight:800;color:var(--sun);line-height:1;
+.title{font-size:clamp(2.6rem,8vw,5rem);font-weight:800;color:var(--sun);line-height:1;
   text-shadow:0 4px 0 #B07A00,0 10px 24px rgba(0,0,0,.35)}
-.start{background:rgba(12,34,38,.8);color:#fff;text-align:center;align-items:center;backdrop-filter:blur(4px);gap:12px}
+.start{background:rgba(12,34,38,.8);color:#fff;text-align:center;align-items:center;backdrop-filter:blur(4px);gap:9px}
 .start .muted{color:#CFE5E1}
 .start .sub{font-family:var(--display);font-size:clamp(1.3rem,3.4vw,2rem);font-weight:800}
 .school{background:var(--sun);color:var(--on-sun);border-radius:999px;padding:4px 18px;font-weight:800}
@@ -116,6 +116,21 @@ p{margin:0}
 .promise{background:var(--brand-soft);border-radius:16px;padding:12px 16px;font-weight:700}
 .stats{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
 .stats span{background:var(--brand-soft);border-radius:14px;padding:8px 16px;font-weight:800}
+.swatches{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.sw{width:40px;height:40px;border-radius:50%;border:3px solid rgba(255,255,255,.45);cursor:pointer;padding:0}
+.sw[aria-pressed="true"]{border-color:var(--sun);box-shadow:0 0 0 3px var(--sun)}
+.sw:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.pad .act{font-family:var(--display);font-weight:800;font-size:calc(var(--k)*.24);background:var(--sun);color:var(--on-sun)}
+.pad .act.on{background:var(--brand);color:#fff}
+.pad .jump{grid-area:1/3}.pad .run{grid-area:3/3}
+.fact{background:#FFF4D1;color:#3A2A00;border-radius:16px;padding:12px 16px;text-align:start;width:100%}
+.fact b{display:block;font-family:var(--display);color:#8A5A00}
+.boardwrap{width:100%;max-height:36vh;overflow:auto}
+.board{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.board th,.board td{padding:6px 10px;border-bottom:1px solid var(--line);text-align:start}
+.board th{font-size:.85rem;color:var(--muted)}
+.board tr.me td{background:#FFF4D1;font-weight:800}
+.empty{color:var(--muted);padding:10px 0}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -127,6 +142,7 @@ p{margin:0}
   <div class="grp">
     <span class="pill lvl">المستوى: <span id="hLvl">1</span> / <span id="hLvlT">5</span></span>
     <span class="pill sun">النقاط: <span id="hScore">0</span></span>
+    <span class="pill">الوقت: <span id="hTime">00:00</span></span>
     <span class="pill">المواقف: <span id="hMis">0</span> / 5</span>
     <span class="pill">النجوم: <span id="hStar">0</span> / <span id="hStarT">8</span></span>
   </div>
@@ -135,6 +151,7 @@ p{margin:0}
     <button class="iconbtn" id="snd">الصوت: يعمل</button>
     <button class="iconbtn" id="fs">ملء الشاشة</button>
     <button class="iconbtn" id="restart">ابدأ من جديد</button>
+    <button class="iconbtn" id="stopDemo" hidden>إيقاف العرض</button>
   </div>
 </div>
 
@@ -143,6 +160,8 @@ p{margin:0}
   <button class="l" data-k="l" aria-label="إلى اليسار"><svg viewBox="0 0 10 10"><path d="M1 5 8 .5v9z"/></svg></button>
   <button class="r" data-k="r" aria-label="إلى اليمين"><svg viewBox="0 0 10 10"><path d="M9 5 2 .5v9z"/></svg></button>
   <button class="d" data-k="d" aria-label="إلى الخلف"><svg viewBox="0 0 10 10"><path d="M5 9 9.5 2h-9z"/></svg></button>
+  <button class="act jump" id="bJump">قفز</button>
+  <button class="act run" id="bRun">جري</button>
 </div>
 
 <div class="map" id="map" hidden>
@@ -151,7 +170,7 @@ p{margin:0}
   <div class="legend"><span><i style="background:#E8423B"></i>موقف</span><span><i style="background:#FFC233"></i>نجمة</span><span><i style="background:#1F8A4C"></i>تم</span></div>
 </div>
 
-<div class="hint" id="hint" hidden><span>تحرّك بالأزرار أو بلمس الأرض أو بالأسهم. انظر إلى الخريطة لتجد المواقف والنجوم.</span></div>
+<div class="hint" id="hint" hidden><span>تحرّك بالأزرار أو بلمس الأرض أو بالأسهم، واقفز بالمسافة واجرِ بزر Shift. انظر إلى الخريطة لتجد المواقف والنجوم.</span></div>
 <div id="toastBox"></div>
 <div class="fade" id="fade"></div>
 
@@ -171,11 +190,19 @@ p{margin:0}
       <button class="choice" data-g="boy" aria-pressed="true">ولد</button>
       <button class="choice" data-g="girl" aria-pressed="false">بنت</button>
     </div>
+    <span class="muted">لون القميص</span>
+    <div class="swatches" id="swShirt" role="group" aria-label="لون القميص"></div>
+    <span class="muted">لون الشعر</span>
+    <div class="swatches" id="swHair" role="group" aria-label="لون الشعر"></div>
     <label for="nm" class="muted">اكتب اسمك ليظهر فوق شخصيتك وعلى شهادتك</label>
     <input type="text" id="nm" maxlength="24" placeholder="اكتب اسمك هنا">
     <div class="row">
       <button class="btn sun" id="go">ابدأ اللعبة</button>
       <button class="btn ghost" id="fs2">ملء الشاشة</button>
+    </div>
+    <div class="row">
+      <button class="btn ghost" id="demoBtn">عرض تلقائي</button>
+      <button class="btn ghost" id="boardBtn">لوحة الأبطال</button>
     </div>
   </div>
 </div>
@@ -200,6 +227,7 @@ p{margin:0}
     <h1 style="font-size:clamp(2rem,6vw,3rem)" id="lT"></h1>
     <div class="stats" id="lS"></div>
     <p id="lP"></p>
+    <div class="fact"><b>هل تعلم؟</b><span id="lF"></span></div>
     <div class="row"><button class="btn sun" id="lGo"></button></div>
   </div>
 </div>
@@ -213,8 +241,20 @@ p{margin:0}
     <span class="rank" id="cRank"></span>
     <p id="cText"></p>
     <p class="promise">وعدي: لن أتنمر على أحد، وسأقف بجانب كل من يتعرض للتنمر، وسأخبر شخصًا كبيرًا أثق به إذا رأيت تنمرًا.</p>
+    <h3>لوحة الأبطال</h3>
+    <div class="boardwrap" id="cBoard"></div>
     <p class="muted">التقطوا صورة لهذه الشاشة وعلّقوها في الفصل.</p>
     <div class="row"><button class="btn" id="again">العب مرة أخرى</button></div>
+  </div>
+</div>
+
+<div class="layer dim" id="boardL" hidden>
+  <div class="panel center">
+    <span class="eyebrow">مدرسة IPS الرسمية الدولية بالعبور</span>
+    <h1 style="font-size:clamp(1.8rem,5vw,2.6rem)">لوحة الأبطال</h1>
+    <p class="muted">أعلى النقاط أولًا، وعند التساوي يفوز الأسرع.</p>
+    <div class="boardwrap" id="bBoard"></div>
+    <div class="row"><button class="btn" id="boardX">رجوع</button></div>
   </div>
 </div>
 
@@ -338,6 +378,12 @@ const LEVELS=[
  ]}
 ];
 const WORDS=["أنت مهم","تعالَ العب معنا","أنا بجانبك","فكرتك رائعة","شكرًا لك","أنا آسف","هل أنت بخير؟","أحسنت","أنت صديق رائع","نحن فريق واحد","لا تحزن","أنا فخور بك","ابتسامتك جميلة","معًا أقوى"];
+const FACTS=[
+ "طالب واحد تقريبًا من كل ثلاثة طلاب في العالم تعرّض للتنمر في المدرسة خلال شهر واحد، بحسب منظمة اليونسكو.",
+ "في أكثر من نصف المرات التي يتدخل فيها زميل للدفاع، يتوقف التنمر خلال عشر ثوانٍ فقط.",
+ "أول خميس من شهر نوفمبر هو اليوم الدولي لمكافحة العنف والتنمر في المدارس، بما في ذلك التنمر الإلكتروني.",
+ "التنمر لا يؤذي الضحية وحدها، بل يؤذي أيضًا المتنمر والطلاب الذين يشاهدون ويسكتون.",
+ "الاحتفاظ بصورة للرسائل المسيئة وإخبار شخص كبير من أفضل طرق إيقاف التنمر الإلكتروني."];
 const LEVEL_MAX=LEVELS.map(L=>L.missions.length*20+L.stars*5);
 const TOTAL_MAX=LEVEL_MAX.reduce((a,b)=>a+b,0);
 const NL=LEVELS.length;
@@ -565,12 +611,12 @@ function nameTex(name){return canvasTex(512,128,(c,w,h)=>{c.clearRect(0,0,w,h);c
  const tw=Math.min(w-20,c.measureText(name).width+70),x=(w-tw)/2;c.fillStyle="rgba(15,122,113,.94)";c.beginPath();
  if(c.roundRect)c.roundRect(x,14,tw,96,48);else c.rect(x,14,tw,96);c.fill();c.strokeStyle="#FFC233";c.lineWidth=6;c.stroke();
  c.fillStyle="#fff";c.textAlign="center";c.textBaseline="middle";c.fillText(name,w/2,64,w-60);});}
-function makePlayer(kind,name){
+function makePlayer(kind,name,shirtC,hairC){
  const pos=player?player.g.position.clone():new T.Vector3();
  if(player){scene.remove(player.g);kids=kids.filter(k=>k!==player);}
- const o={skin:0xE7B58C,hair:0x2B1B12,shirt:0xFFC233,pants:0x1F5C8C,scale:1.12};
- if(kind!=="boy"){o.girl=1;o.skirt=0x1F5C8C;o.hair=0x3A2216;}
- player=makeKid(o);player.g.position.copy(pos);
+ const o={skin:0xE7B58C,hair:hairC||0x2B1B12,shirt:shirtC||0xFFC233,pants:0x1F5C8C,scale:1.12};
+ if(kind!=="boy"){o.girl=1;o.skirt=0x1F5C8C;}
+ player=makeKid(o);player.g.position.copy(pos);player.jy=0;player.jv=0;
  const cape=mesh(new T.PlaneGeometry(1.1,1.5),M(0x0F7A71,{side:T.DoubleSide}),0,1.45,-.62,player.g);cape.rotation.x=.18;
  if(name){const sp=new T.Sprite(new T.SpriteMaterial({map:nameTex(name),depthTest:false,transparent:true}));sp.scale.set(3.4,.85,1);sp.position.set(0,3.55,0);sp.renderOrder=10;player.g.add(sp);
   if(document.fonts)document.fonts.load('800 64px "Baloo Bhaijaan 2"').then(()=>{sp.material.map=nameTex(name);sp.material.needsUpdate=true;}).catch(()=>{});}
@@ -584,6 +630,25 @@ makeKid(kidLook(1,{x:EX-4,z:EZ+10,shirt:FRIENDLY[2],face:Math.PI}));
 makeKid(kidLook(0,{x:EX+5,z:EZ+7,shirt:FRIENDLY[0],face:-2.6}));
 makeKid(kidLook(1,{x:EX+8,z:EZ+12,shirt:FRIENDLY[4],face:-2.2}));
 for(let i=0;i<12;i++)makeKid(kidLook(i%2,{x:-60+i*12,z:10+rnd()*40,shirt:FRIENDLY[i%6],wander:1}));
+
+/* ================= speech bubbles ================= */
+function makeBubble(parent,y){
+ const c=document.createElement("canvas");c.width=640;c.height=180;const tex=new T.CanvasTexture(c);
+ const sp=new T.Sprite(new T.SpriteMaterial({map:tex,depthTest:false,transparent:true}));sp.scale.set(8,2.25,1);sp.position.set(0,y,0);sp.renderOrder=9;sp.visible=false;parent.add(sp);
+ let cur="";
+ return {sp,set(text,mood){if(text===cur)return;cur=text;const x=c.getContext("2d");x.clearRect(0,0,640,180);
+  x.font='800 46px "Baloo Bhaijaan 2", Tajawal, sans-serif';x.direction="rtl";const w=Math.min(620,x.measureText(text).width+60),l=(640-w)/2;
+  x.fillStyle=mood==="bad"?"#FFE3E1":mood==="good"?"#DDF6E6":"#ffffff";x.strokeStyle=mood==="bad"?"#C63F3A":mood==="good"?"#1F8A4C":"#10292E";x.lineWidth=6;
+  x.beginPath();if(x.roundRect)x.roundRect(l,8,w,120,40);else x.rect(l,8,w,120);x.fill();x.stroke();
+  x.beginPath();x.moveTo(300,124);x.lineTo(320,170);x.lineTo(345,124);x.closePath();x.fill();x.stroke();
+  x.fillStyle=x.strokeStyle==="#10292E"?"#10292E":x.strokeStyle;x.fillStyle="#10292E";x.textAlign="center";x.textBaseline="middle";x.fillText(text,320,70,600);tex.needsUpdate=true;}};
+}
+const LINES={
+ bullyBoy:["انظروا إليه! هههه","لا أحد يريدك معنا!","هيا اضحكوا عليه!"],
+ bullyGirl:["انظروا إليها! هههه","لا أحد يريدكِ معنا!","هيا اضحكوا عليها!"],
+ victim:["توقفوا من فضلكم...","لماذا تفعلون هذا؟","أشعر بالحزن..."],
+ alone:["لا أحد يكلّمني...","أشعر بالوحدة..."],
+ teacher:["من لديه فكرة لحملة ضد التنمر؟"]};
 
 /* ================= level building ================= */
 let missions=[],stars=[];
@@ -608,6 +673,10 @@ function buildLevel(li){
   mesh(new T.CylinderGeometry(.22,.12,1,8),red,0,.3,0,mk);mesh(new T.SphereGeometry(.2,10,8),red,0,-.5,0,mk);
   m.marker=mk;
   const ring=flatMesh(new T.RingGeometry(3.6,4.1,48),new T.MeshBasicMaterial({color:0xE8423B,transparent:true,opacity:.6}),x,.08,z);m.ring=ring;m.objs.push(ring);
+  m.vB=makeBubble(m.victim.g,4.9);
+  if(m.bulliesK.length)m.bB=makeBubble(m.bulliesK[0].g,4.9);
+  m.vLines=m.teacher?LINES.teacher:m.bullies?LINES.victim:LINES.alone;
+  m.bLines=m.vg?LINES.bullyGirl:LINES.bullyBoy;
   m.kids.forEach(k=>m.objs.push(k.g));
   missions.push(m);
  });
@@ -626,6 +695,13 @@ function burst(pos,kind,n){for(let i=0;i<n;i++){
  const m=kind==="heart"?new T.Mesh(heartGeo,heartM):new T.Mesh(sparkGeo,new T.MeshBasicMaterial({color:[0xFFC233,0xffffff,0xFF8FB0,0x7FE3D4][i%4]}));
  m.position.copy(pos);scene.add(m);const a=rnd()*Math.PI*2,sp=2+rnd()*4;
  parts.push({m,v:new T.Vector3(Math.cos(a)*sp,4+rnd()*6,Math.sin(a)*sp),life:1.6+rnd(),spin:rnd()*6,g:kind==="heart"?4:9});}}
+function fireworks(n){for(let i=0;i<n;i++)setTimeout(()=>{
+ const c=new T.Color().setHSL(rnd(),1,.6),p0=player.g.position;
+ const r=new T.Mesh(sparkGeo,new T.MeshBasicMaterial({color:0xffffff}));r.scale.setScalar(1.6);
+ r.position.set(p0.x+(rnd()-.5)*40,1,p0.z-8-rnd()*25);scene.add(r);tone(160,.3,"sine",.05);
+ parts.push({m:r,v:new T.Vector3(0,22+rnd()*8,0),life:1.1,spin:0,g:6,boom:()=>{tone(70,.6,"sawtooth",.07);
+  for(let k=0;k<70;k++){const s=new T.Mesh(sparkGeo,new T.MeshBasicMaterial({color:c}));s.position.copy(r.position);scene.add(s);
+   const u=new T.Vector3(rnd()-.5,rnd()-.5,rnd()-.5).normalize().multiplyScalar(9+rnd()*5);parts.push({m:s,v:u,life:1.4+rnd()*.6,spin:3,g:5});}}});},i*380);}
 const confetti=[];
 function confettiRain(){const cols=[0xFFC233,0xFF5C7A,0x4FA3E3,0x58C27D,0xB487E8,0xffffff];
  for(let i=0;i<260;i++){const m=new T.Mesh(new T.PlaneGeometry(.35,.22),new T.MeshBasicMaterial({color:cols[i%6],side:T.DoubleSide}));
@@ -639,8 +715,17 @@ const sfx={star(){tone(988,.18);tone(1480,.3,"sine",.1,.08);},good(){[523,659,78
  bad(){tone(196,.4,"sawtooth",.05);},door(){[392,523,659].forEach((f,i)=>tone(f,.35,"sine",.1,i*.08));},
  win(){[523,659,784,1046,784,1046,1318].forEach((f,i)=>tone(f,.5,"triangle",.12,i*.14));}};
 
+/* background music: calm minor while bullying is around, bright major as the school lights up */
+const midi=n=>440*Math.pow(2,(n-69)/12);
+const PROG_SAD=[[57,60,64],[53,57,60],[48,52,55],[55,59,62]],PROG_HAPPY=[[60,64,67],[55,59,62],[57,60,64],[53,57,60]];
+let mstep=0;
+setInterval(()=>{if(!AC||!soundOn||S.mode==="intro")return;const k=S.mode==="finale"?1:S.mode==="entrance"?.6:kindness();
+ const prog=k>=.5?PROG_HAPPY:PROG_SAD,ch=prog[Math.floor(mstep/8)%4],st=mstep%8;
+ tone(midi(ch[st%3]+(st>=4?12:0)+(k>=.5?12:0)),.45,"triangle",.03);
+ if(st===0)tone(midi(ch[0]-12),1.6,"sine",.05);mstep++;},300);
+
 /* ================= state & HUD ================= */
-const S={mode:"intro",level:0,score:0,solved:0,stars:0,starTotal:8,paused:false,name:"",kind:"boy",target:null,keys:{},levelDone:false};
+const S={mode:"intro",level:0,score:0,solved:0,stars:0,starTotal:8,paused:false,name:"",kind:"boy",target:null,keys:{},levelDone:false,shirt:0xFFC233,hair:0x2B1B12,demo:false,run:false,t0:0,time:0};
 const fem=()=>S.kind!=="boy";
 const gtxt=s=>fem()?s.replace(/حاول مرة أخرى/g,"حاولي مرة أخرى"):s;
 function hud(){$("hScore").textContent=S.score;$("hMis").textContent=S.solved;$("hStar").textContent=S.stars;
@@ -654,26 +739,62 @@ $("again").onclick=()=>location.reload();
 $("restart").onclick=()=>location.reload();
 $("hLvlT").textContent=NL;
 document.querySelectorAll(".choice").forEach(b=>b.onclick=()=>{S.kind=b.dataset.g;document.querySelectorAll(".choice").forEach(x=>x.setAttribute("aria-pressed",x===b?"true":"false"));});
-function clearPad(){S.keys={};document.querySelectorAll("#pad button").forEach(b=>b.classList.remove("on"));}
-document.querySelectorAll("#pad button").forEach(b=>{const k=b.dataset.k;
+function clearPad(){S.keys={};S.run=false;document.querySelectorAll("#pad button").forEach(b=>b.classList.remove("on"));}
+document.querySelectorAll("#pad button[data-k]").forEach(b=>{const k=b.dataset.k;
  const on=e=>{e.preventDefault();if(!canMove())return;S.keys[k]=1;S.target=null;b.classList.add("on");try{b.setPointerCapture(e.pointerId);}catch(_){}};
  const off=()=>{S.keys[k]=0;b.classList.remove("on");};
  b.addEventListener("pointerdown",on);["pointerup","pointercancel","lostpointercapture"].forEach(ev=>b.addEventListener(ev,off));
  b.addEventListener("contextmenu",e=>e.preventDefault());});
 const canMove=()=>(S.mode==="play"||S.mode==="entrance")&&!S.paused;
 
-$("go").onclick=()=>{
- S.name=$("nm").value.trim()||(fem()?"بطلة الصداقة":"بطل الصداقة");
+/* colour swatches for the player's character */
+const SHIRTS=[0xFFC233,0xE8423B,0x4FA3E3,0x58C27D,0xB487E8,0xF08BB4],HAIRC=[0x2B1B12,0x6B4423,0x111111,0xC9A15B];
+function swatches(id,list,key){const box=$(id);list.forEach((c,i)=>{const b=document.createElement("button");b.className="sw";b.style.background="#"+c.toString(16).padStart(6,"0");
+ b.setAttribute("aria-label","لون "+(i+1));b.setAttribute("aria-pressed",S[key]===c?"true":"false");
+ b.onclick=()=>{S[key]=c;[...box.children].forEach(x=>x.setAttribute("aria-pressed",x===b?"true":"false"));};box.appendChild(b);});}
+swatches("swShirt",SHIRTS,"shirt");swatches("swHair",HAIRC,"hair");
+
+/* leaderboard, saved on this device (the school screen) */
+const BKEY="ips-dir3-board";
+function loadBoard(){try{return JSON.parse(localStorage.getItem(BKEY)||"[]");}catch(e){return [];}}
+function saveBoard(b){try{localStorage.setItem(BKEY,JSON.stringify(b));}catch(e){}}
+const fmt=sec=>{sec=Math.round(sec);return String(Math.floor(sec/60)).padStart(2,"0")+":"+String(sec%60).padStart(2,"0");};
+function renderBoard(el,meId){const b=loadBoard();el.innerHTML="";
+ if(!b.length){const p=document.createElement("p");p.className="empty";p.textContent="لا يوجد أبطال بعد. كن أول من ينهي اللعبة!";el.appendChild(p);return;}
+ const t=document.createElement("table");t.className="board";t.innerHTML="<tr><th>#</th><th>الاسم</th><th>النقاط</th><th>الوقت</th></tr>";
+ b.forEach((r,i)=>{const tr=document.createElement("tr");if(r.d===meId)tr.className="me";[i+1,r.n,r.s,fmt(r.t)].forEach(v=>{const td=document.createElement("td");td.textContent=v;tr.appendChild(td);});t.appendChild(tr);});
+ el.appendChild(t);}
+$("boardBtn").onclick=()=>{renderBoard($("bBoard"));$("boardL").hidden=false;$("boardX").focus();};
+$("boardX").onclick=()=>{$("boardL").hidden=true;};
+
+/* run and jump */
+function jump(){if(!canMove()||player.jy>.01)return;player.jv=10;tone(520,.15,"square",.04);tone(780,.12,"square",.03,.06);}
+$("bJump").addEventListener("pointerdown",e=>{e.preventDefault();jump();});
+$("bRun").addEventListener("pointerdown",e=>{e.preventDefault();S.run=true;$("bRun").classList.add("on");try{$("bRun").setPointerCapture(e.pointerId);}catch(_){}});
+["pointerup","pointercancel","lostpointercapture"].forEach(ev=>$("bRun").addEventListener(ev,()=>{S.run=false;$("bRun").classList.remove("on");}));
+addEventListener("keydown",e=>{if(e.code==="Space"&&canMove()){e.preventDefault();jump();}if(e.key==="Shift")S.run=true;});
+addEventListener("keyup",e=>{if(e.key==="Shift")S.run=false;});
+
+/* demo mode: the game plays itself, for presenting the project */
+function startDemo(){S.demo=true;S.kind=rnd()<.5?"boy":"girl";S.shirt=pick(SHIRTS);S.hair=pick(HAIRC);
+ try{if(location.hash!=="#demo")location.hash="demo";}catch(e){}startGame("عرض تلقائي");}
+$("demoBtn").onclick=startDemo;
+$("stopDemo").onclick=()=>{try{location.hash="";}catch(e){}location.reload();};
+
+$("go").onclick=()=>startGame();
+function startGame(forceName){
+ S.name=forceName||$("nm").value.trim()||(fem()?"بطلة الصداقة":"بطل الصداقة");
  try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}
- makePlayer(S.kind,S.name);
- $("startL").hidden=true;$("hud").hidden=false;$("pad").hidden=false;$("hint").hidden=false;setTimeout(()=>$("hint").hidden=true,15000);
+ makePlayer(S.kind,S.name,S.shirt,S.hair);
+ $("startL").hidden=true;$("hud").hidden=false;$("pad").hidden=S.demo;$("stopDemo").hidden=!S.demo;$("hint").hidden=S.demo;setTimeout(()=>$("hint").hidden=true,15000);
  S.mode="entrance";player.g.position.set(EX,0,EZ+30);player.face=player.faceT=Math.PI;
  camera.position.set(EX,7,EZ+44);buildLevel(0);
- toast("أهلًا "+S.name+"! أنت أمام مدرسة IPS. الباب الزجاجي يوصلك إلى الساحة.");
-};
+ toast(S.demo?"عرض تلقائي للعبة درع الصداقة":"أهلًا "+S.name+"! أنت أمام مدرسة IPS. الباب الزجاجي يوصلك إلى الساحة.");
+}
+if(location.hash==="#demo")setTimeout(startDemo,800);
 function goYard(){
  S.mode="fade";clearPad();sfx.door();$("fade").classList.add("on");
- setTimeout(()=>{player.g.position.set(0,0,-36);player.face=player.faceT=0;camera.position.set(0,15,-19);S.mode="play";S.target=null;
+ setTimeout(()=>{player.g.position.set(0,0,-36);player.face=player.faceT=0;camera.position.set(0,15,-19);S.mode="play";S.target=null;S.t0=clock.elapsedTime;
   $("map").hidden=false;$("fade").classList.remove("on");toast("المستوى 1: أصلح 5 مواقف واجمع "+S.starTotal+" نجوم. الخريطة في الأسفل.");},600);
 }
 
@@ -692,6 +813,9 @@ function openMission(m){cur=m;S.paused=true;S.target=null;clearPad();
     $("dF").innerHTML=`<div class="fb bad"><b>${fem()?"لا، فكّري مرة أخرى":"لا، فكّر مرة أخرى"}</b><span></span></div>`;$("dF").querySelector("span").textContent=gtxt(o.f);sfx.bad();}
   };});
  $("dlgL").hidden=false;setTimeout(()=>{const f=$("dO").querySelector(".opt");if(f)f.focus();},50);
+ if(S.demo){const btns=[...$("dO").children],good=btns.find(b=>b.textContent===m.o.find(o=>o.g).t),bad=btns.find(b=>b!==good);
+  const finish=()=>{if(cur!==m)return;good.click();setTimeout(()=>{if(cur===m&&!$("dGo").hidden)$("dGo").click();},2400);};
+  if(rnd()<.4)setTimeout(()=>{if(cur!==m)return;bad.click();setTimeout(finish,2600);},2600);else setTimeout(finish,2600);}
 }
 $("dX").onclick=()=>{$("dlgL").hidden=true;S.paused=false;if(cur)cur.armed=false;cur=null;};
 $("dGo").onclick=()=>{$("dlgL").hidden=true;S.paused=false;solve(cur);cur=null;};
@@ -700,7 +824,8 @@ function solve(m){m.solved=true;S.solved++;S.score+=m.pts;hud();sfx.good();
  const v=m.victim;v.setMood("happy");v.jumpUntil=clock.elapsedTime+3;
  m.bulliesK.forEach((b,i)=>{b.setMood("happy");b.shirt.color.set(FRIENDLY[(i+3)%6]);b.arms[1].rotation.x=0;
   b.target=new T.Vector3(m.center.x+(i===0?-1.5:1.5),0,m.center.z);b.after=()=>{b.faceT=0;b.jumpUntil=clock.elapsedTime+2.5;};});
- m.ring.material.color.set(0x3DD68C);
+ m.ring.material.color.set(0x3DD68C);m.solvedAt=clock.elapsedTime;
+ m.vB.set(m.teacher?"فكرة رائعة! شكرًا لك":"شكرًا لك! أنت بطل","good");if(m.bB)m.bB.set(m.bg?"آسفات، لن نكررها!":"آسفون، لن نكررها!","good");
  scene.remove(m.marker);const h=mesh(heartGeo,heartM,m.center.x,7,m.center.z);h.scale.setScalar(2.2);m.marker=h;m.objs.push(h);
  burst(new T.Vector3(m.center.x,2.5,m.center.z),"heart",26);burst(new T.Vector3(m.center.x,2.5,m.center.z),"spark",30);
  if(S.solved<5)toast(`أُصلح الموقف! بقي ${5-S.solved}`);
@@ -716,18 +841,24 @@ function levelUp(){S.paused=true;clearPad();sfx.win();burst(player.g.position.cl
  $("lT").textContent=`أنهيت المستوى ${n} من ${NL}!`;
  $("lS").innerHTML="";[`5 مواقف`,`${S.starTotal} نجوم`,`${S.score} نقطة`].forEach(t=>{const s=document.createElement("span");s.textContent=t;$("lS").appendChild(s);});
  $("lP").textContent=`في المستوى ${n+1} مواقف تنمر جديدة في أماكن أخرى من الساحة، ومعها ${next.stars} نجمة. استخدم الخريطة لتجدها.`;
- $("lGo").textContent=`ابدأ المستوى ${n+1}`;$("lvlL").hidden=false;$("lGo").focus();
+ $("lF").textContent=FACTS[(n-1)%FACTS.length];
+ $("lGo").textContent=`ابدأ المستوى ${n+1}`;$("lvlL").hidden=false;$("lGo").focus();fireworks(8);
+ if(S.demo)setTimeout(()=>{if(!$("lvlL").hidden)$("lGo").click();},7000);
 }
 $("lGo").onclick=()=>{$("lvlL").hidden=true;S.level++;buildLevel(S.level);
  player.g.position.set(0,0,-36);player.face=player.faceT=0;S.target=null;S.paused=false;
  toast(`المستوى ${S.level+1}: ظهر تنمر جديد في الساحة!`);};
-function finale(){S.mode="finale";sfx.win();confettiRain();$("hint").hidden=true;$("pad").hidden=true;$("map").hidden=true;clearPad();
+function finale(){S.mode="finale";S.time=clock.elapsedTime-S.t0;sfx.win();confettiRain();fireworks(14);$("hint").hidden=true;$("pad").hidden=true;$("map").hidden=true;clearPad();
  kids.forEach(k=>{k.setMood("happy");k.jumpUntil=clock.elapsedTime+9;});
  setTimeout(()=>{const pct=S.score/TOTAL_MAX,f=fem();
   $("cName").textContent=S.name;
   $("cRank").textContent=pct>=.85?(f?"سفيرة ذهبية ضد التنمر":"سفير ذهبي ضد التنمر"):pct>=.6?(f?"سفيرة فضية ضد التنمر":"سفير فضي ضد التنمر"):(f?"سفيرة ضد التنمر":"سفير ضد التنمر");
-  $("cText").textContent=`${f?"أنهت":"أنهى"} المستويات الخمسة، و${f?"أصلحت":"أصلح"} خمسة وعشرين موقف تنمر، و${f?"جمعت":"جمع"} ${S.score} نقطة من ${TOTAL_MAX}.`;
-  $("certL").hidden=false;$("again").focus();},3200);}
+  $("cText").textContent=`${f?"أنهت":"أنهى"} المستويات الخمسة، و${f?"أصلحت":"أصلح"} خمسة وعشرين موقف تنمر، و${f?"جمعت":"جمع"} ${S.score} نقطة من ${TOTAL_MAX} في ${fmt(S.time)} دقيقة.`;
+  let me=null;if(!S.demo){me=Date.now();const b=loadBoard();b.push({n:S.name,s:S.score,t:Math.round(S.time),d:me});
+   b.sort((a,c)=>c.s-a.s||a.t-c.t);saveBoard(b.slice(0,10));}
+  renderBoard($("cBoard"),me);
+  $("certL").hidden=false;$("again").focus();
+  if(S.demo)setTimeout(()=>location.reload(),12000);},3200);}
 
 /* ================= input ================= */
 const ray=new T.Raycaster(),ndc=new T.Vector2();
@@ -777,7 +908,7 @@ function animKid(k,dt,t,moving){
  if(t<k.jumpUntil){k.g.position.y=Math.abs(Math.sin(t*8+k.phase))*.7;k.arms[0].rotation.z=-2.4;k.arms[1].rotation.z=2.4;}
  else{k.g.position.y=moving?Math.abs(Math.sin(t*11+k.phase))*.08:Math.sin(t*2+k.phase)*.03;k.arms[0].rotation.z=k.mood==="angry"?.5:0;k.arms[1].rotation.z=0;}
 }
-let frame=0;
+let frame=0,lastGoal=null;
 function tick(){
  const dt=Math.min(clock.getDelta(),.05),t=clock.elapsedTime;frame++;
  const kind=S.mode==="intro"||S.mode==="entrance"?.75:kindness();
@@ -787,10 +918,11 @@ function tick(){
  flags.forEach((f,i)=>f.rotation.y=Math.sin(t*2+i)*.25);
 
  const p=player.g.position;let moving=false;
+ if(S.demo&&canMove()&&lastGoal)S.target=new T.Vector3(lastGoal.x,0,lastGoal.z);
  if(canMove()){
   tmp.set((S.keys.r||0)-(S.keys.l||0),0,(S.keys.d||0)-(S.keys.u||0));
   if(tmp.lengthSq()===0&&S.target){tmp.subVectors(S.target,p);tmp.y=0;if(tmp.length()<.3){S.target=null;tmp.set(0,0,0);}}
-  if(tmp.lengthSq()>0){tmp.normalize();player.faceT=Math.atan2(tmp.x,tmp.z);tmp.multiplyScalar((S.mode==="entrance"?9:13)*dt);
+  if(tmp.lengthSq()>0){tmp.normalize();player.faceT=Math.atan2(tmp.x,tmp.z);tmp.multiplyScalar((S.mode==="entrance"?9:13)*(S.run?1.7:1)*dt);
    p.x+=tmp.x;p.z+=tmp.z;moving=true;
    if(S.mode==="entrance"){p.x=Math.max(EX-30,Math.min(EX+30,p.x));p.z=Math.max(EZ-6,Math.min(EZ+44,p.z));}
    else{p.x=Math.max(BOUNDS.x0,Math.min(BOUNDS.x1,p.x));p.z=Math.max(BOUNDS.z0,Math.min(BOUNDS.z1,p.z));}}
@@ -803,6 +935,8 @@ function tick(){
   }
  }
  animKid(player,dt,t,moving);
+ if(player.jy>0||player.jv>0){player.jv-=28*dt;player.jy=Math.max(0,player.jy+player.jv*dt);if(player.jy===0)player.jv=0;player.g.position.y=player.jy;}
+ if(S.mode==="play"&&frame%15===0)$("hTime").textContent=fmt(clock.elapsedTime-S.t0);
  halo.position.set(p.x,.06,p.z);halo.material.opacity=.55+Math.sin(t*4)*.25;
  tapRing.material.opacity=Math.max(0,tapRing.material.opacity-dt*1.2);
  sun.position.set(p.x+30,60,p.z+25);sun.target.position.set(p.x,0,p.z);
@@ -811,6 +945,7 @@ function tick(){
  if(S.mode==="entrance")goal=new T.Vector3(EX,0,EZ-5);
  else if(S.mode==="play"){let bd=1e9;missions.forEach(m=>{if(m.solved)return;const d=p.distanceTo(m.center);if(d<bd){bd=d;goal=m.center;}});
   if(!goal)stars.forEach(s=>{if(s.got)return;const d=Math.hypot(p.x-s.position.x,p.z-s.position.z);if(d<bd){bd=d;goal=s.position;}});}
+ lastGoal=goal;
  arrow.visible=!!goal&&!S.paused&&Math.hypot(goal?goal.x-p.x:0,goal?goal.z-p.z:0)>5;
  if(goal){const a=Math.atan2(goal.x-p.x,goal.z-p.z);arrow.position.set(p.x+Math.sin(a)*2.3,.5,p.z+Math.cos(a)*2.3);arrow.rotation.set(0,a,0);arrow.rotateX(Math.PI/2);}
 
@@ -820,6 +955,11 @@ function tick(){
    if(d<.15){k.target=null;if(k.after){k.after();k.after=null;}}else{tmp.normalize();k.faceT=Math.atan2(tmp.x,tmp.z);k.g.position.addScaledVector(tmp,Math.min(d,k.speed*dt));mv=true;}}
   animKid(k,dt,t,mv);});
  missions.forEach(m=>{
+  const near=S.mode==="play"&&!S.paused&&Math.hypot(p.x-m.center.x,p.z-m.center.z)<24;
+  if(m.solved){const show=near&&t-m.solvedAt<6;m.vB.sp.visible=show;if(m.bB)m.bB.sp.visible=show;}
+  else{const ph=Math.floor((t+m.idx*1.3)/2.6),bTurn=!!m.bB&&ph%2===0;
+   m.vB.set(m.vLines[ph%m.vLines.length],"");m.vB.sp.visible=near&&!bTurn;
+   if(m.bB){m.bB.set(m.bLines[ph%m.bLines.length],"bad");m.bB.sp.visible=near&&bTurn;}}
   m.marker.rotation.y+=dt*2;m.marker.position.y=7+Math.sin(t*3)*.3;
   m.ring.material.opacity=m.solved?.5:.35+Math.abs(Math.sin(t*3))*.4;
   if(m.solved){m.cloud.scale.multiplyScalar(Math.max(0,1-dt*3));if(m.cloud.scale.x<.02)m.cloud.visible=false;}
@@ -827,7 +967,7 @@ function tick(){
  });
  stars.forEach((s,i)=>{if(!s.got){s.rotation.y+=dt*2.2;s.position.y=1.8+Math.sin(t*2.5+i)*.3;}});
  for(let i=parts.length-1;i>=0;i--){const q=parts[i];q.v.y-=q.g*dt;q.m.position.addScaledVector(q.v,dt);q.m.rotation.y+=q.spin*dt;q.life-=dt;
-  q.m.scale.setScalar(Math.max(.01,Math.min(1,q.life)));if(q.life<=0){scene.remove(q.m);parts.splice(i,1);}}
+  if(!q.boom)q.m.scale.setScalar(Math.max(.01,Math.min(1,q.life)));if(q.life<=0){scene.remove(q.m);parts.splice(i,1);if(q.boom)q.boom();}}
  confetti.forEach(c=>{c.m.position.y-=c.s*dt;c.m.rotation.x+=c.r*dt;c.m.rotation.y+=c.r*.7*dt;if(c.m.position.y<0)c.m.position.y=18+rnd()*10;});
 
  if(S.mode==="intro"){const a=t*.08;camera.position.set(Math.sin(a)*110,50,25+Math.cos(a)*110);camera.lookAt(0,2,15);}
