@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>درع الصداقة</title>
+<title>لا للتنمر نعيش أفضل</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg viewBox="0 0 200 232" xmlns="http://www.w3.org/2000/svg"%3E%3Cdefs%3E%3ClinearGradient id="icG" x1="0" y1="0" x2="0" y2="1"%3E%3Cstop offset="0" stop-color="%23FFE9A3"/%3E%3Cstop offset=".55" stop-color="%23FFC233"/%3E%3Cstop offset="1" stop-color="%23C98400"/%3E%3C/linearGradient%3E%3ClinearGradient id="icT" x1="0" y1="0" x2="0" y2="1"%3E%3Cstop offset="0" stop-color="%231BB3A3"/%3E%3Cstop offset="1" stop-color="%2308423E"/%3E%3C/linearGradient%3E%3ClinearGradient id="icH" x1="0" y1="0" x2="0" y2="1"%3E%3Cstop offset="0" stop-color="%23FF8FA3"/%3E%3Cstop offset="1" stop-color="%23E2264D"/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d="M100 4 194 34v72c0 64-40 104-94 122C46 210 6 170 6 106V34z" fill="url%28%23icG%29"/%3E%3Cpath d="M100 20 178 45v61c0 53-33 87-78 103C55 193 22 159 22 106V45z" fill="url%28%23icT%29"/%3E%3Cpath d="M100 32 166 53v53c0 45-28 75-66 89" fill="none" stroke="%23fff" stroke-opacity=".18" stroke-width="6"/%3E%3Cpath d="M100 150c-30-20-48-36-48-57a23 23 0 0 1 48-10 23 23 0 0 1 48 10c0 21-18 37-48 57z" fill="url%28%23icH%29" stroke="%23fff" stroke-width="4"/%3E%3Cpath d="M76 98l16 15 32-30" fill="none" stroke="%23fff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/%3E%3Cg fill="%23FFC233"%3E%3Cpath d="M100 160l4 9 10 1-8 6 3 10-9-6-9 6 3-10-8-6 10-1z"/%3E%3Cpath d="M62 150l3 6 7 1-5 4 2 7-7-4-6 4 2-7-5-4 7-1z"/%3E%3Cpath d="M138 150l3 6 7 1-5 4 2 7-7-4-6 4 2-7-5-4 7-1z"/%3E%3C/g%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@600;800&family=Tajawal:wght@400;500;700;800&display=swap">
 <style>
 /* Layout: full-screen 3D school (entrance plaza + turf yard); HTML overlays float above the canvas: HUD, D-pad, minimap, dialogs */
@@ -136,6 +137,39 @@ p{margin:0}
 .board th{font-size:.85rem;color:var(--muted)}
 .board tr.me td{background:#FFF4D1;font-weight:800}
 .empty{color:var(--muted);padding:10px 0}
+.splash{position:fixed;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;overflow:hidden;
+  background:radial-gradient(circle at 50% 42%,#1B5560 0,#0A2328 45%,#040D0F 100%);
+  padding-block:calc(20px + env(safe-area-inset-top,0px)) calc(20px + env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.splash .rays{position:absolute;left:50%;top:42%;width:240vmax;height:240vmax;margin:-120vmax 0 0 -120vmax;
+  background:repeating-conic-gradient(from 0deg,rgba(255,194,51,.12) 0 7deg,transparent 7deg 18deg);animation:spin 50s linear infinite}
+.splash .ember{position:absolute;bottom:-10px;width:6px;height:6px;border-radius:50%;background:#FFC233;box-shadow:0 0 10px #FFC233;animation:ember linear infinite}
+.splash-in{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.splash .logo{width:clamp(120px,22vh,230px);filter:drop-shadow(0 0 34px rgba(255,194,51,.55));animation:logoIn 1.3s cubic-bezier(.2,1.5,.4,1) both}
+.splash .epic{font-family:var(--display);font-weight:800;font-size:clamp(3.4rem,12vw,8rem);line-height:1;color:#FFC233;margin-top:10px;
+  text-shadow:0 5px 0 #A86F00,0 0 46px rgba(255,194,51,.6);animation:rise .9s .6s both,glow 3s 1.6s ease-in-out infinite}
+.splash .tag{font-family:var(--display);font-weight:800;font-size:clamp(1.7rem,5vw,3.2rem);color:#fff;text-shadow:0 0 24px rgba(27,179,163,.8);animation:rise .9s 1s both}
+.splash .line{width:min(380px,70vw);height:3px;background:linear-gradient(90deg,transparent,#FFC233,transparent);margin:8px 0;animation:grow 1s 1.3s both}
+.splash .credit{color:#CFE5E1;font-size:clamp(1rem,2.4vw,1.4rem);animation:fade 1s 1.6s both}
+.splash .credit b{color:#FFC233;font-family:Arial,Tajawal,sans-serif;letter-spacing:.25em;font-size:1.25em;margin-inline-start:.2em}
+.splash .btn{margin-top:16px;font-size:clamp(1.2rem,2.6vw,1.6rem);padding:16px 40px;box-shadow:0 0 0 0 rgba(255,194,51,.6);animation:fade 1s 2s both,pulse 1.8s 3s infinite}
+.splash.out{animation:out .9s ease-in forwards;pointer-events:none}
+.startlogo{display:flex;gap:16px;align-items:center;justify-content:center}
+.startlogo svg{width:clamp(80px,10vw,130px);height:auto;filter:drop-shadow(0 0 18px rgba(255,194,51,.45))}
+.credit2{color:#CFE5E1;font-size:.9rem}.credit2 b{color:#FFC233;letter-spacing:.2em;font-family:Arial,Tajawal,sans-serif}
+.lvlban{position:fixed;inset:0;z-index:7;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center}
+.lvlban small{font-family:var(--display);font-weight:800;font-size:clamp(1.2rem,3vw,2rem);color:#fff;text-shadow:0 3px 14px rgba(0,0,0,.6);animation:ban 2.8s both}
+.lvlban b{font-family:var(--display);font-weight:800;font-size:clamp(3rem,10vw,7rem);line-height:1;color:#FFC233;text-shadow:0 5px 0 #A86F00,0 0 40px rgba(255,194,51,.7),0 10px 30px rgba(0,0,0,.5);animation:ban 2.8s both}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes ember{from{transform:translateY(0);opacity:0}10%{opacity:1}to{transform:translateY(-110vh);opacity:0}}
+@keyframes logoIn{from{transform:scale(.2) rotate(-25deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes rise{from{transform:translateY(40px) scale(.9);opacity:0;letter-spacing:.3em}to{transform:none;opacity:1}}
+@keyframes grow{from{transform:scaleX(0)}to{transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes glow{50%{text-shadow:0 5px 0 #A86F00,0 0 80px rgba(255,194,51,.95)}}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,194,51,.6)}70%{box-shadow:0 0 0 22px rgba(255,194,51,0)}100%{box-shadow:0 0 0 0 rgba(255,194,51,0)}}
+@keyframes out{to{opacity:0;transform:scale(1.2);filter:blur(6px)}}
+@keyframes ban{0%{transform:scale(2.4);opacity:0}15%{transform:scale(1);opacity:1}80%{transform:scale(1.04);opacity:1}100%{transform:scale(.9);opacity:0}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -179,15 +213,28 @@ p{margin:0}
 <div id="toastBox"></div>
 <div class="fade" id="fade"></div>
 
+<div class="splash" id="splash">
+  <div class="rays"></div>
+  <div class="splash-in">
+    <svg class="logo" role="img" aria-label="شعار لا للتنمر" viewBox="0 0 200 232" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="lgG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE9A3"/><stop offset=".55" stop-color="#FFC233"/><stop offset="1" stop-color="#C98400"/></linearGradient><linearGradient id="lgT" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1BB3A3"/><stop offset="1" stop-color="#08423E"/></linearGradient><linearGradient id="lgH" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF8FA3"/><stop offset="1" stop-color="#E2264D"/></linearGradient></defs><path d="M100 4 194 34v72c0 64-40 104-94 122C46 210 6 170 6 106V34z" fill="url(#lgG)"/><path d="M100 20 178 45v61c0 53-33 87-78 103C55 193 22 159 22 106V45z" fill="url(#lgT)"/><path d="M100 32 166 53v53c0 45-28 75-66 89" fill="none" stroke="#fff" stroke-opacity=".18" stroke-width="6"/><path d="M100 150c-30-20-48-36-48-57a23 23 0 0 1 48-10 23 23 0 0 1 48 10c0 21-18 37-48 57z" fill="url(#lgH)" stroke="#fff" stroke-width="4"/><path d="M76 98l16 15 32-30" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/><g fill="#FFC233"><path d="M100 160l4 9 10 1-8 6 3 10-9-6-9 6 3-10-8-6 10-1z"/><path d="M62 150l3 6 7 1-5 4 2 7-7-4-6 4 2-7-5-4 7-1z"/><path d="M138 150l3 6 7 1-5 4 2 7-7-4-6 4 2-7-5-4 7-1z"/></g></svg>
+    <div class="epic">لا للتنمر</div>
+    <div class="tag">نعيش أفضل</div>
+    <div class="line"></div>
+    <div class="credit">صُممت بواسطة <b>HDHY</b></div>
+    <button class="btn sun" id="enter">اضغط للبدء</button>
+  </div>
+</div>
+<div id="banBox"></div>
+
 <div class="layer" id="startL">
 <div class="scrollbtns">
   <button id="scUp" aria-label="مرّر لأعلى"><svg viewBox="0 0 10 10"><path d="M5 1 9.5 8h-9z"/></svg></button>
   <button id="scDn" aria-label="مرّر لأسفل"><svg viewBox="0 0 10 10"><path d="M5 9 9.5 2h-9z"/></svg></button>
 </div>
   <div class="panel start">
-    <img class="poster" id="startPoster" alt="شعار وطن بلا تنمر">
+    <div class="startlogo"><svg role="img" aria-label="شعار لا للتنمر" viewBox="0 0 200 232" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="slG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE9A3"/><stop offset=".55" stop-color="#FFC233"/><stop offset="1" stop-color="#C98400"/></linearGradient><linearGradient id="slT" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1BB3A3"/><stop offset="1" stop-color="#08423E"/></linearGradient><linearGradient id="slH" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF8FA3"/><stop offset="1" stop-color="#E2264D"/></linearGradient></defs><path d="M100 4 194 34v72c0 64-40 104-94 122C46 210 6 170 6 106V34z" fill="url(#slG)"/><path d="M100 20 178 45v61c0 53-33 87-78 103C55 193 22 159 22 106V45z" fill="url(#slT)"/><path d="M100 32 166 53v53c0 45-28 75-66 89" fill="none" stroke="#fff" stroke-opacity=".18" stroke-width="6"/><path d="M100 150c-30-20-48-36-48-57a23 23 0 0 1 48-10 23 23 0 0 1 48 10c0 21-18 37-48 57z" fill="url(#slH)" stroke="#fff" stroke-width="4"/><path d="M76 98l16 15 32-30" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/><g fill="#FFC233"><path d="M100 160l4 9 10 1-8 6 3 10-9-6-9 6 3-10-8-6 10-1z"/><path d="M62 150l3 6 7 1-5 4 2 7-7-4-6 4 2-7-5-4 7-1z"/><path d="M138 150l3 6 7 1-5 4 2 7-7-4-6 4 2-7-5-4 7-1z"/></g></svg><img class="poster" id="startPoster" alt="شعار وطن بلا تنمر"></div>
     <div class="title">لا للتنمر</div>
-    <div class="sub">درع الصداقة</div>
+    <div class="sub">نعيش أفضل</div>
     <span class="school">مدرسة IPS الرسمية الدولية بالعبور</span>
     <p class="muted">تبدأ رحلتك داخل الفصل، ثم تمشي في الممر إلى غرفة الرياضة، وتنزل على السلم إلى الساحة. أصلح مواقف التنمر، واجمع نجوم الكلام الطيب. في اللعبة ستة مستويات، وكل مستوى يُفتح بعد إصلاح كل المواقف وجمع كل النجوم.</p>
     <div class="signs">
@@ -210,6 +257,7 @@ p{margin:0}
       <button class="btn ghost" id="demoBtn">عرض تلقائي</button>
       <button class="btn ghost" id="boardBtn">لوحة الأبطال</button>
     </div>
+    <span class="credit2">صُممت بواسطة <b>HDHY</b></span>
   </div>
 </div>
 
@@ -255,6 +303,7 @@ p{margin:0}
     <div class="boardwrap" id="cBoard"></div>
     <p class="muted">التقطوا صورة لهذه الشاشة وعلّقوها في الفصل.</p>
     <div class="row"><button class="btn" id="again">العب مرة أخرى</button></div>
+    <span class="muted">لعبة «لا للتنمر نعيش أفضل» · صُممت بواسطة HDHY</span>
   </div>
 </div>
 
@@ -1057,6 +1106,21 @@ function renderBoard(el,meId){const b=loadBoard();el.innerHTML="";
  b.forEach((r,i)=>{const tr=document.createElement("tr");if(r.d===meId)tr.className="me";[i+1,r.n,r.s,fmt(r.t)].forEach(v=>{const td=document.createElement("td");td.textContent=v;tr.appendChild(td);});t.appendChild(tr);});
  el.appendChild(t);}
 $("startPoster").src=POSTER;
+/* cinematic opening */
+(function(){const sp=$("splash");for(let i=0;i<26;i++){const e=document.createElement("i");e.className="ember";
+  e.style.left=(Math.random()*100)+"%";e.style.animationDuration=(5+Math.random()*7)+"s";e.style.animationDelay=(-Math.random()*8)+"s";
+  const sz=3+Math.random()*6;e.style.width=e.style.height=sz+"px";sp.insertBefore(e,sp.firstChild.nextSibling);}
+ if(location.hash==="#demo"){sp.remove();return;}
+ $("enter").onclick=()=>{try{if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}epicSound();sp.classList.add("out");setTimeout(()=>{sp.remove();$("nm").focus();},900);};
+ setTimeout(()=>{if(document.body.contains(sp))$("enter").focus();},2100);})();
+function epicSound(){tone(55,1.6,"sine",.45);tone(41,2,"sine",.35,.02);tone(110,.6,"triangle",.18,.02);
+ [[0,[196,233,294]],[.55,[208,262,311]],[1.1,[262,330,392,523]]].forEach(([d,ch])=>ch.forEach(f=>{tone(f,d<1?.6:2.2,"sawtooth",.035,d+.35);tone(f/2,d<1?.6:2.2,"triangle",.05,d+.35);}));
+ [0,.55,1.1].forEach(d=>tone(70,.5,"sine",.3,d+.35));}
+const LEVEL_NAMES=["داخل المدرسة","الساحة","الساحة والملاعب","القلب الشجاع","مواقف البنات","التحدي الأخير"];
+function banner(i){const box=$("banBox");box.innerHTML="";const d=document.createElement("div");d.className="lvlban";
+ const sm=document.createElement("small");sm.textContent=LEVEL_NAMES[i]||"";const b=document.createElement("b");b.textContent="المستوى "+(i+1);
+ d.appendChild(b);d.appendChild(sm);box.appendChild(d);tone(70,.5,"sine",.3);tone(70,.5,"sine",.3,.22);tone(523,.8,"triangle",.07,.4);tone(784,1,"triangle",.06,.5);
+ setTimeout(()=>{if(d.parentNode)d.remove();},2900);}
 [["scUp","startL",-1],["scDn","startL",1],["ccUp","certL",-1],["ccDn","certL",1]].forEach(([b,l,d])=>$(b).onclick=()=>$(l).scrollBy({top:d*Math.round(innerHeight*.45),behavior:"smooth"}));
 $("boardBtn").onclick=()=>{renderBoard($("bBoard"));$("boardL").hidden=false;$("boardX").focus();};
 $("boardX").onclick=()=>{$("boardL").hidden=true;};
@@ -1078,18 +1142,19 @@ $("stopDemo").onclick=()=>{try{location.hash="";}catch(e){}location.reload();};
 $("go").onclick=()=>startGame();
 function startGame(forceName){
  S.name=forceName||$("nm").value.trim()||(fem()?"بطلة الصداقة":"بطل الصداقة");
- try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}
+ try{if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}
  makePlayer(S.kind,S.name,S.shirt,S.hair);
  $("startL").hidden=true;$("hud").hidden=false;$("pad").hidden=S.demo;$("stopDemo").hidden=!S.demo;$("hint").hidden=S.demo;setTimeout(()=>$("hint").hidden=true,15000);
  S.mode="play";S.level=0;buildLevel(0);player.g.position.set(IX+8,FH,IZ+21);player.face=player.faceT=Math.PI;player.baseY=FH;
  camera.position.set(IX+8,FH+7,IZ+29.5);S.t0=clock.elapsedTime;$("map").hidden=false;
- toast(S.demo?"عرض تلقائي للعبة درع الصداقة":"أهلًا "+S.name+"! أنت في الفصل. المستوى 1: أصلح المواقف في الفصل والممر وغرفة الرياضة وعلى السلم.");
+ setTimeout(()=>banner(0),300);
+ toast(S.demo?"عرض تلقائي للعبة لا للتنمر نعيش أفضل":"أهلًا "+S.name+"! أنت في الفصل. المستوى 1: أصلح المواقف في الفصل والممر وغرفة الرياضة وعلى السلم.");
 }
 if(location.hash==="#demo")setTimeout(startDemo,800);
 function goYard(){
  S.mode="fade";clearPad();sfx.door();$("fade").classList.add("on");
  setTimeout(()=>{S.level=1;buildLevel(1);player.g.position.set(0,0,-36);player.baseY=0;player.face=player.faceT=0;camera.position.set(0,15,-19);S.mode="play";S.target=null;
-  $("fade").classList.remove("on");toast("المستوى 2: وصلت إلى الساحة! أصلح 5 مواقف واجمع "+S.starTotal+" نجوم.");},600);
+  $("fade").classList.remove("on");banner(1);toast("المستوى 2: وصلت إلى الساحة! أصلح 5 مواقف واجمع "+S.starTotal+" نجوم.");},600);
 }
 
 /* ================= mission dialog ================= */
@@ -1144,7 +1209,7 @@ function levelUp(){S.paused=true;clearPad();sfx.win();burst(player.g.position.cl
 }
 $("lGo").onclick=()=>{$("lvlL").hidden=true;
  if(LEVELS[S.level].indoor){S.paused=false;S.exitOpen=true;doorMat.color.set(0xffffff);toast("الباب الأخضر مفتوح! انزل على السلم واخرج إلى الساحة.");return;}
- S.level++;buildLevel(S.level);
+ S.level++;buildLevel(S.level);banner(S.level);
  player.g.position.set(0,0,-36);player.face=player.faceT=0;S.target=null;S.paused=false;
  toast(`المستوى ${S.level+1}: ظهر تنمر جديد في الساحة!`);};
 function finale(){S.mode="finale";S.time=clock.elapsedTime-S.t0;sfx.win();confettiRain();fireworks(14);$("hint").hidden=true;$("pad").hidden=true;$("map").hidden=true;clearPad();
