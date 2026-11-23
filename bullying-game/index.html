@@ -170,6 +170,38 @@ p{margin:0}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,194,51,.6)}70%{box-shadow:0 0 0 22px rgba(255,194,51,0)}100%{box-shadow:0 0 0 0 rgba(255,194,51,0)}}
 @keyframes out{to{opacity:0;transform:scale(1.2);filter:blur(6px)}}
 @keyframes ban{0%{transform:scale(2.4);opacity:0}15%{transform:scale(1);opacity:1}80%{transform:scale(1.04);opacity:1}100%{transform:scale(.9);opacity:0}}
+/* phones and other short screens (the APK runs in landscape) */
+@media (max-height:540px){
+ body{font-size:14px}
+ .splash .logo{width:auto;height:24vh}
+ .splash .epic{font-size:min(12vw,16vh);margin-top:2px}
+ .splash .tag{font-size:min(5.5vw,8vh)}
+ .splash .line{margin:3px 0}
+ .splash .credit{font-size:.95rem}
+ .splash .btn{margin-top:6px;padding:10px 30px;font-size:1.1rem}
+ .start{gap:4px;padding:10px 18px}
+ .start .desc,.start .signs{display:none}
+ .title{font-size:min(8vw,11vh)}
+ .start .sub{font-size:1.2rem}
+ .startlogo{gap:10px}.startlogo svg,.start .poster{width:auto;height:11vh}
+ .start .school{display:none}
+ .start .muted{font-size:.85rem}
+ .start input{padding:8px 12px}
+ .btn{padding:9px 18px}.btn.sun{font-size:1.05rem}
+ .choice{padding:6px 16px}
+ .hud{gap:5px;padding-top:calc(5px + env(safe-area-inset-top,0px))}.hud .grp{gap:5px}
+ .pill{padding:2px 10px}.meterbox{display:none}
+ .iconbtn{min-height:32px;padding:3px 10px}
+ .pad{--k:46px;gap:5px}.pad button{border-radius:14px}
+ .map{padding:4px}.map b,.legend{display:none}.map canvas{width:96px}
+ .toast{font-size:1.05rem;top:26%;padding:6px 16px}
+ .lvlban b{font-size:min(10vw,17vh)}.lvlban small{font-size:1rem}
+ .panel{padding:12px 16px;gap:8px}
+ .situation{font-size:1rem;padding:10px 12px}.opt{padding:8px 12px}.fb b{font-size:1.05rem}
+ .cert .name{font-size:2rem}
+}
+/* on touch phones people scroll with a swipe, so the arrows are only for big screens */
+@media (pointer:coarse) and (max-width:900px){.scrollbtns{display:none}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -236,7 +268,7 @@ p{margin:0}
     <div class="title">لا للتنمر</div>
     <div class="sub">نعيش أفضل</div>
     <span class="school">مدرسة IPS الرسمية الدولية بالعبور</span>
-    <p class="muted">تبدأ رحلتك داخل الفصل، ثم تمشي في الممر إلى غرفة الرياضة، وتنزل على السلم إلى الساحة. أصلح مواقف التنمر، واجمع نجوم الكلام الطيب. في اللعبة ستة مستويات، وكل مستوى يُفتح بعد إصلاح كل المواقف وجمع كل النجوم.</p>
+    <p class="muted desc">تبدأ رحلتك داخل الفصل، ثم تمشي في الممر إلى غرفة الرياضة، وتنزل على السلم إلى الساحة. أصلح مواقف التنمر، واجمع نجوم الكلام الطيب. في اللعبة ستة مستويات، وكل مستوى يُفتح بعد إصلاح كل المواقف وجمع كل النجوم.</p>
     <div class="signs">
       <div class="sign"><b>مقصود</b>يعلم أنه يؤذي غيره</div>
       <div class="sign"><b>متكرر</b>لا يحدث مرة واحدة فقط</div>
@@ -1077,7 +1109,8 @@ const gtxt=s=>fem()?s.replace(/حاول مرة أخرى/g,"حاولي مرة أ�
 function hud(){$("hScore").textContent=S.score;$("hMis").textContent=S.solved;$("hStar").textContent=S.stars;
  $("hMeter").style.width=Math.round(kindness()*100)+"%";}
 function kindness(){return (S.solved*20+S.stars*5)/LEVEL_MAX[S.level];}
-function toast(txt){const d=document.createElement("div");d.className="toast";d.textContent=txt;const box=$("toastBox");box.innerHTML="";box.appendChild(d);setTimeout(()=>{if(d.parentNode)d.remove();},2600);}
+let banUntil=0;
+function toast(txt){const w=banUntil-performance.now();if(w>0){setTimeout(()=>toast(txt),w);return;}const d=document.createElement("div");d.className="toast";d.textContent=txt;const box=$("toastBox");box.innerHTML="";box.appendChild(d);setTimeout(()=>{if(d.parentNode)d.remove();},2600);}
 function fullscreen(){const el=document.documentElement;try{const p=document.fullscreenElement?document.exitFullscreen():(el.requestFullscreen||el.webkitRequestFullscreen||(()=>{})).call(el);if(p&&p.catch)p.catch(()=>{});}catch(e){}}
 $("fs").onclick=fullscreen;$("fs2").onclick=fullscreen;
 $("snd").onclick=()=>{soundOn=!soundOn;$("snd").textContent="الصوت: "+(soundOn?"يعمل":"متوقف");};
@@ -1111,13 +1144,13 @@ $("startPoster").src=POSTER;
   e.style.left=(Math.random()*100)+"%";e.style.animationDuration=(5+Math.random()*7)+"s";e.style.animationDelay=(-Math.random()*8)+"s";
   const sz=3+Math.random()*6;e.style.width=e.style.height=sz+"px";sp.insertBefore(e,sp.firstChild.nextSibling);}
  if(location.hash==="#demo"){sp.remove();return;}
- $("enter").onclick=()=>{try{if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}epicSound();sp.classList.add("out");setTimeout(()=>{sp.remove();$("nm").focus();},900);};
+ $("enter").onclick=()=>{try{if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}epicSound();sp.classList.add("out");setTimeout(()=>{sp.remove();},900);};
  setTimeout(()=>{if(document.body.contains(sp))$("enter").focus();},2100);})();
 function epicSound(){tone(55,1.6,"sine",.45);tone(41,2,"sine",.35,.02);tone(110,.6,"triangle",.18,.02);
  [[0,[196,233,294]],[.55,[208,262,311]],[1.1,[262,330,392,523]]].forEach(([d,ch])=>ch.forEach(f=>{tone(f,d<1?.6:2.2,"sawtooth",.035,d+.35);tone(f/2,d<1?.6:2.2,"triangle",.05,d+.35);}));
  [0,.55,1.1].forEach(d=>tone(70,.5,"sine",.3,d+.35));}
 const LEVEL_NAMES=["داخل المدرسة","الساحة","الساحة والملاعب","القلب الشجاع","مواقف البنات","التحدي الأخير"];
-function banner(i){const box=$("banBox");box.innerHTML="";const d=document.createElement("div");d.className="lvlban";
+function banner(i){banUntil=performance.now()+2700;$("toastBox").innerHTML="";const box=$("banBox");box.innerHTML="";const d=document.createElement("div");d.className="lvlban";
  const sm=document.createElement("small");sm.textContent=LEVEL_NAMES[i]||"";const b=document.createElement("b");b.textContent="المستوى "+(i+1);
  d.appendChild(b);d.appendChild(sm);box.appendChild(d);tone(70,.5,"sine",.3);tone(70,.5,"sine",.3,.22);tone(523,.8,"triangle",.07,.4);tone(784,1,"triangle",.06,.5);
  setTimeout(()=>{if(d.parentNode)d.remove();},2900);}
